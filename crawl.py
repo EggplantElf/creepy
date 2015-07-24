@@ -7,11 +7,12 @@ from time import sleep, time
 
 # This is the listener, resposible for receiving data
 class StdOutListener(tweepy.StreamListener):
-    def __init__(self, client):
+    def __init__(self, client, limit):
         super(StdOutListener, self).__init__()
         self.tweets =  client['twitter']['tweets']
         self.users =  client['twitter']['users']
         self.count = 0
+        self.limit = limit
 
     def on_data(self, data):
         """
@@ -39,7 +40,7 @@ class StdOutListener(tweepy.StreamListener):
                         # self.users.insert({'user_id': user_id})
 
                     self.count += 1
-                    if self.count >= 1000:
+                    if self.count >= self.limit:
                         return False
             except:
                 pprint(tweet)
@@ -70,7 +71,12 @@ if __name__ == '__main__':
     auth.set_access_token(access_token, access_token_secret)
 
     client = MongoClient()
-    l = StdOutListener(client)
+    if len(sys.argv) == 2:
+        limit = int(sys.argv[1]) 
+    else:
+        limit = 1000000
+
+    l = StdOutListener(client, limit)
     t = time()
     stream = tweepy.Stream(auth, l)
     stream.filter(track=['n', 'r'], languages=['tr'])
