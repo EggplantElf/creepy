@@ -24,10 +24,17 @@ def tweet_stream():
 
 
 def check(text):
-    print text
+#    print text
     for word in tokenize(text):
-        if not turk_morph(word) and ger_morph(word):
-            return True
+        tr = tr_morph(word)
+        if not tr:
+            de = de_morph(word)
+            if de:
+                print word, 'de'
+            else:
+                print word, '?'
+        else:
+            print word, 'tr'
 
 def tokenize(text):
     """
@@ -51,7 +58,7 @@ def punctuation(word):
     return False
 
 
-def turk_morph(word):
+def tr_morph(word):
     """
     morphological analysis for turkish, works word by word, must run in daemon mode, otherwise very slow
     """
@@ -61,15 +68,16 @@ def turk_morph(word):
     morphs = output.strip().split('\n')
     return morphs[0].split('\t')[-1] != '+?'
 
-def ger_morph(word):
+
+def de_morph(word):
     """
     morphological analysis for german words
     """
-    cmd = './_run_smor.sh'
+    cmd = './bin/_run_smor.sh 2> /dev/null'
     lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
     output = lookup.communicate(input=word)[0]
     morphs = output.strip().split('\n')
-    return morphs[0].split('\t')[-1] != '_'
+    return morphs[0].split('\t')[2] not in ['_', '<+PUNCT>']
 
 
 
