@@ -1,4 +1,9 @@
+bin/*
+morph/*
 *.pyc
 *.txt
 *.pwd
 *.out
+*.script
+*.fst
+
