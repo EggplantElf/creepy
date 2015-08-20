@@ -8,7 +8,9 @@ import json
 from pymongo import MongoClient
 from segtok.segmenter import split_multi
 from segtok.tokenizer import word_tokenizer, split_contractions
+import pexpect
 import subprocess
+
 
 
 
@@ -20,68 +22,105 @@ def tweet_stream():
     return tweets.find({'user_id': '239308610'})
 
 def tweet_stream():
-    return [u"@GarantiyeSor olmayın benden. das Ist ein Test."]
+    return [u"@GarantiyeSor Olmayın ın benden.", u" das Ist ein Test.", u"Olmayın das"]
 
 
-def check(text):
-#    print text
-    for word in tokenize(text):
-        tr = tr_morph(word)
-        if not tr:
-            de = de_morph(word)
-            if de:
-                print word, 'de'
-            else:
-                print word, '?'
-        else:
-            print word, 'tr'
 
-def tokenize(text):
+class Checker:
     """
-    tokenize the text and filter the @username (and punctuation, smiley ...), leave only words
+    for the speed of morphological analyzer, it has to work in batch,
+    it analyzes e.g. every 1000 tweets in one go, then reloads the analyzer
     """
-    at = False
-    for sent in split_multi(text):
-        for token in word_tokenizer(sent):
-            if token == '@':
-                at = True
-                continue
-            if at:
-                at = False
-                continue
-            if punctuation(token):
-                continue
-            yield(token.encode('utf-8', 'ignore'))    
+
+    def __init__(self):
+        pass
+
+    def check(self, stream):
+        """
+        analyzes every german word as well, if too slow, then change to analyze only non-turkish words
+        """
+        for tweets in self.batch(stream):
+            words, counts = self.tokenize(tweets)
+            trs = self.morph_tr(words)
+            des = self.morph_de(words)
+            i = 0
+            ans = []
+            for count in counts:
+                tr = trs[i: i + count]
+                i += count
+                print tr, de
+                is_switch = any((not t and d) for (t, d) in zip(tr, de)) and any(tr)
+                ans.append(is_switch)
+        return ans
 
 
-def punctuation(word):
-    return False
 
 
-def tr_morph(word):
-    """
-    morphological analysis for turkish, works word by word, must run in daemon mode, otherwise very slow
-    """
-    cmd = './bin/lookup  -d -q -f ./bin/checker.script'
-    lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-    output = lookup.communicate(input=word)[0]
-    morphs = output.strip().split('\n')
-    return morphs[0].split('\t')[-1] != '+?'
+
+    def batch(self, stream, size = 1000):
+        out = []
+        i = 0
+        for text in stream:
+            out.append(text)
+            i += 1
+            if i == size:
+                yield out
+                out = []
+                i = 0
+        if out:
+            yield out
 
 
-def de_morph(word):
-    """
-    morphological analysis for german words
-    """
-    cmd = './bin/_run_smor.sh 2> /dev/null'
-    lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-    output = lookup.communicate(input=word)[0]
-    morphs = output.strip().split('\n')
-    return morphs[0].split('\t')[2] not in ['_', '<+PUNCT>']
+    def tokenize(self, tweets):
+        """
+        tokenize the text and filter the @username (and punctuation, smiley ...), leave only words
+        """
 
+        counts = [] # [5, 12, 0, 3, ...] the counts of valid words for each tweet
+        out = '' # one-word-per-line string of the tokenized words for morph analysis
+        at = False
+        
+        for text in tweets:
+            i = 0
+            for sent in split_multi(text):
+                for token in word_tokenizer(sent):
+                    if token == '@':
+                        at = True
+                        continue
+                    if at:
+                        at = False
+                        continue
+                    out += (token.encode('utf-8', 'ignore').title() + '\n')
+                    i += 1
+            counts.append(i)
+        return out, counts
+
+
+    def morph_tr(self, words):
+        """
+        morphological analysis for turkish words
+        """
+        cmd = './bin/lookup -d -q -f bin/checker.script'
+        lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        output = lookup.communicate(input=words)[0]
+        morphs = output.strip().split('\n\n')
+        assert len(morphs) == len(words.strip().split('\n'))
+        return map(lambda x: x[-2:] != '+?', morphs)
+
+
+    def morph_de(self, words):
+        """
+        morphological analysis for german words, exclude punctuation and numbers
+        """
+        cmd = './bin/_run_smor.sh 2> /dev/null'
+        lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        output = lookup.communicate(input=words)[0]
+        morphs = output.strip().split('\n\n')
+        assert len(morphs) == len(words.strip().split('\n'))
+
+        return morphs[0].split('\t')[2] not in ['_', '<+PUNCT>']
 
 
 if __name__ == '__main__':
-    for t in tweet_stream():
-        # text = t['text']
-        check(t)
+    checker = Checker()
+    print checker.check(tweet_stream())
