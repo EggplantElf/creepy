@@ -55,7 +55,7 @@ def turk_morph(word):
     """
     morphological analysis for turkish, works word by word, must run in daemon mode, otherwise very slow
     """
-    cmd = './lookup  -d -q -f ./checker.script'
+    cmd = './bin/lookup  -d -q -f ./bin/checker.script'
     lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
     output = lookup.communicate(input=word)[0]
     morphs = output.strip().split('\n')
@@ -65,13 +65,11 @@ def ger_morph(word):
     """
     morphological analysis for german words
     """
-    cmd = './lookup  -d -q -f ./checker.script'
+    cmd = './_run_smor.sh'
     lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
     output = lookup.communicate(input=word)[0]
     morphs = output.strip().split('\n')
     return morphs[0].split('\t')[-1] != '_'
-
-
 
 
 
