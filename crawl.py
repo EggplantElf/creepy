@@ -5,6 +5,12 @@ from pymongo import MongoClient
 from pprint import pprint
 from time import sleep, time
 
+# TODO:
+# try multi-thread, maybe not work 
+# try to store with elasticsearch
+# schedule to run it every day
+
+
 # This is the listener, resposible for receiving data
 class StdOutListener(tweepy.StreamListener):
     def __init__(self, client, limit):
