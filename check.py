@@ -19,11 +19,9 @@ def tweet_stream():
     client = MongoClient()
     tweets = client['twitter']['tweets']
     users = client['twitter']['users']
-    return tweets.find({'user_id': '239308610'})
-
-def tweet_stream():
-    return [u"@GarantiyeSor Olmayın ın benden.", u" das Ist ein Test.", u"Olmayın das"]
-
+#   for tweet in tweets.find({'user_id': '239308610'}):
+    for tweet in tweets.find():
+        yield tweet['text']
 
 
 class Checker:
@@ -47,15 +45,16 @@ class Checker:
             ans = []
             for count in counts:
                 tr = trs[i: i + count]
+                de = des[i: i + count]
                 i += count
-                print tr, de
-                is_switch = any((not t and d) for (t, d) in zip(tr, de)) and any(tr)
-                ans.append(is_switch)
+                is_switch = any((not t and d) for (t, d) in zip(tr, de)) and tr.count(True) >= tr.count(False)
+                ans.append((is_switch, tr, de))
+
+        for t,(a, tr, de) in zip(tweets, ans):
+            if a:
+                print t.encode('utf-8')
+    #            print tr, de
         return ans
-
-
-
-
 
     def batch(self, stream, size = 1000):
         out = []
@@ -117,10 +116,9 @@ class Checker:
         output = lookup.communicate(input=words)[0]
         morphs = output.strip().split('\n\n')
         assert len(morphs) == len(words.strip().split('\n'))
-
-        return morphs[0].split('\t')[2] not in ['_', '<+PUNCT>']
+        return map(lambda x: x.split('\t')[2] not in ['_', '<+PUNCT>', '<+CARD>', '<+SYMBOL>'], morphs)
 
 
 if __name__ == '__main__':
     checker = Checker()
-    print checker.check(tweet_stream())
+    checker.check(tweet_stream())
