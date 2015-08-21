@@ -73,11 +73,6 @@ def read_auth_file(filename):
 
 
 if __name__ == '__main__':
-    consumer_key, consumer_secret, access_token, access_token_secret = read_auth_file('agent.pwd')
-    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_token, access_token_secret)
-
-
     parser = argparse.ArgumentParser(description='Crawler parameters')
 
     parser.add_argument('-l', action='store', dest='lang',
@@ -87,8 +82,14 @@ if __name__ == '__main__':
     parser.add_argument('-c', action='store', default=1000000,
                         dest='count', type=int,
                         help='number of tweets to crawl')
-
     param = parser.parse_args()
+
+
+    consumer_key, consumer_secret, access_token, access_token_secret = read_auth_file('pwd/' + param.lang + '.pwd')
+    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+    auth.set_access_token(access_token, access_token_secret)
+
+
 
     client = MongoClient()
     l = StdOutListener(client, param.count, param.lang)
