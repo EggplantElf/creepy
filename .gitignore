@@ -6,4 +6,4 @@ morph/*
 *.out
 *.script
 *.fst
-
+.nfs*
