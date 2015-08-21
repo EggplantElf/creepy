@@ -23,7 +23,6 @@ def tweet_stream():
     for tweet in tweets.find():
         yield tweet['text']
 
-
 class Checker:
     """
     for the speed of morphological analyzer, it has to work in batch,
@@ -37,7 +36,11 @@ class Checker:
         """
         analyzes every german word as well, if too slow, then change to analyze only non-turkish words
         """
-        for tweets in self.batch(stream):
+        batch_num = 1
+        size = 10000
+        for tweets in self.batch(stream, size):
+            print batch_num * size 
+            batch_num += 1
             words, counts = self.tokenize(tweets)
             trs = self.morph_tr(words)
             des = self.morph_de(words)
