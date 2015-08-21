@@ -4,6 +4,7 @@ import sys
 from pymongo import MongoClient
 from pprint import pprint
 from time import sleep, time
+import argparse
 
 # TODO:
 # try multi-thread, maybe not work 
@@ -13,10 +14,10 @@ from time import sleep, time
 
 # This is the listener, resposible for receiving data
 class StdOutListener(tweepy.StreamListener):
-    def __init__(self, client, limit):
+    def __init__(self, client, limit, lang):
         super(StdOutListener, self).__init__()
-        self.tweets =  client['twitter']['tweets']
-        self.users =  client['twitter']['users']
+        self.tweets =  client['twitter_'+lang]['tweets']
+        self.users =  client['twitter_'+lang]['users']
         self.count = 0
         self.limit = limit
 
@@ -76,16 +77,24 @@ if __name__ == '__main__':
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
 
-    client = MongoClient()
-    if len(sys.argv) == 2:
-        limit = int(sys.argv[1]) 
-    else:
-        limit = 1000000
 
-    l = StdOutListener(client, limit)
+    parser = argparse.ArgumentParser(description='Crawler parameters')
+
+    parser.add_argument('-l', action='store', dest='lang',
+                        default='en',
+                        help='language, default = en')
+
+    parser.add_argument('-c', action='store', default=1000000,
+                        dest='count', type=int,
+                        help='number of tweets to crawl')
+
+    param = parser.parse_args()
+
+    client = MongoClient()
+    l = StdOutListener(client, param.count, param.lang)
     t = time()
     stream = tweepy.Stream(auth, l)
-    stream.filter(track=['n', 'r'], languages=['tr'])
+    stream.filter(track=['a', 'e', 'i', 'o', 'u'], languages=[param.lang])
     print time() - t
 
 
