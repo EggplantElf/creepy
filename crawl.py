@@ -7,10 +7,8 @@ from time import sleep, time
 import argparse
 
 # TODO:
-# try multi-thread, maybe not work 
 # try to store with elasticsearch
-# schedule to run it every day
-
+# add crawling date
 
 # This is the listener, resposible for receiving data
 class StdOutListener(tweepy.StreamListener):
@@ -85,7 +83,7 @@ if __name__ == '__main__':
     param = parser.parse_args()
 
 
-    consumer_key, consumer_secret, access_token, access_token_secret = read_auth_file('pwd/' + param.lang + '.pwd')
+    consumer_key, consumer_secret, access_token, access_token_secret = read_auth_file('pwd/%s.pwd' % param.lang)
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
 
