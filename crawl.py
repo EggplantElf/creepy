@@ -87,7 +87,7 @@ if __name__ == '__main__':
     param = parser.parse_args()
 
 
-    consumer_key, consumer_secret, access_token, access_token_secret = read_auth_file('pwd/%s.pwd' % param.lang)
+    consumer_key, consumer_secret, access_token, access_token_secret = read_auth_file('/home/users0/xiangyu/creepy/pwd/%s.pwd' % param.lang)
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
 
