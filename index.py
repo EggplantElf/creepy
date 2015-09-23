@@ -23,7 +23,8 @@ def index(client, freq_file, lang, batch_size):
     freq = client['freq'][lang]
     tweets = client['twitter_'+lang]['tweets']
 
-    freq_dict = load(freq_file)
+    # freq_dict = load(freq_file)
+    freq_dict = defaultdict(int)
 
     # read a batch, 
     # update 'indexed', 
