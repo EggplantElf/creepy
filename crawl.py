@@ -41,7 +41,8 @@ class StdOutListener(tweepy.StreamListener):
                     self.tweets.insert({'tweet_id': tweet_id, \
                                         'text': text, \
                                         'user_id': user_id, \
-                                        'country': country
+                                        'country': country,\
+                                        'indexed': False
                                         })
 
                     # if not self.users.find_one({'user_id':user_id}):
