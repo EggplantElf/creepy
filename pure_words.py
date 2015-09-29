@@ -22,7 +22,7 @@ def load(freq_file):
     return d
 
 def is_word(text):
-    return alphabet .match(text)
+    return alphabet.match(text.encode('utf-8'))
 
 def read_freq(top = 10000):
     en_freq = load('freq_en.txt')
