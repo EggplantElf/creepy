@@ -61,7 +61,7 @@ def read_freq(top = 10000):
 
 
 if __name__ == '__main__':
-    if len(sys.argv != 2):
+    if len(sys.argv) != 2:
         top = 100000
     else:
         top = int(sys.argv[1])
