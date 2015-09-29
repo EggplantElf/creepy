@@ -3,6 +3,7 @@
 
 from collections import defaultdict
 import re
+import sys
 
 number = re.compile(r'\d+((,|.|/)\d*)*(%)?') # number, date
 
@@ -60,4 +61,8 @@ def read_freq(top = 10000):
 
 
 if __name__ == '__main__':
-    read_freq(10000)
+    if len(sys.argv != 2):
+        top = 100000
+    else:
+        top = int(sys.argv[1])
+    read_freq(top)
