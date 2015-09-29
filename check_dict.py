@@ -28,8 +28,10 @@ def check(de_words, tr_words):
     client = MongoClient()
     tweets = client['twitter_tr']['tweets']
 
+    i = 0
     for tweet in tweets.find({'indexed': False}): #.limit(batch_size)
         # tweets.update({'_id': tweet['_id']}, {'$set': {'indexed': True}})
+        i += 1
         text = re.sub(filter_pattern, '', tweet['text'])
         total, de, tr = 0, 0, 0
         de_list, tr_list = [], []
@@ -48,6 +50,11 @@ def check(de_words, tr_words):
         if ans:
             print tweet['text'].encode('utf-8')
             print de_list
+
+        if i % 10000 == 0:
+            print '*****************'
+            print 'read %d tweets'
+            print '*****************'
 
 
 
