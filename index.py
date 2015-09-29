@@ -19,7 +19,7 @@ filter_pattern = r'(@|#|https?:)\S*'
 
 
 
-def index(client, freq_file, lang, batch_size):
+def index(client, freq_file, lang):
     freq = client['freq'][lang]
     tweets = client['twitter_'+lang]['tweets']
 
@@ -31,9 +31,10 @@ def index(client, freq_file, lang, batch_size):
     # increase count in freq_dict and total
     t0 = time()
 
-    for tweet in tweets.find({'indexed': False}).limit(batch_size):
+    for tweet in tweets.find({'indexed': False}):
         # tweets.update({'_id': tweet['_id']}, {'$set': {'indexed': True}})
-        text = re.sub(filter_pattern, '', tweet['text'])
+        text = tweet['text'].lower()
+        text = re.sub(filter_pattern, '', text)
         for sent in split_multi(text):
             for word in word_tokenizer(sent):
                 freq_dict[word] += 1
@@ -65,8 +66,7 @@ def save(freq_file, freq_dict):
 
 if __name__ == '__main__':
     lang = sys.argv[1]
-    size = int(sys.argv[2])
     freq_file = 'freq_%s.txt' % lang
 
     client = MongoClient()
-    index(client, freq_file, lang, size)
+    index(client, freq_file, lang)
