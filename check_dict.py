@@ -46,7 +46,7 @@ def check(de_words, tr_words):
                 if tr >= 5 and de >= 2:
                     ans = True
         if ans:
-            print tweet['text']
+            print tweet['text'].encode('utf-8')
             print de_list
 
 
