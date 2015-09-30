@@ -35,7 +35,7 @@ class Searcher:
             success = self.search(user['user_id'])
             self.users.update({'_id': user['_id']}, {'$set': {'searched': True}})                    
             if not success:
-                self.users.update({'user_id': uid}, {'$set': {'flag': True}})
+                self.users.update({'user_id': user['user_id']}, {'$set': {'flag': True}})
 
     def search(self, uid):
         try:
