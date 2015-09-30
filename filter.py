@@ -4,7 +4,7 @@
 
 import tweepy
 from pymongo import MongoClient
-
+import sys
 
 # filter the tweets, users into "real" switch db, 
 # based on the filtered german words 
@@ -44,9 +44,9 @@ def filter_tweets(db, valid_wlist):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 2 and sys.argv[1] == 'w':
+    if len(sys.argv) == 2 and sys.argv[1] == '-w':
         write_words('de_words.txt')
-    elif len(sys.argv) == 2 and sys.argv[1] == 'f':
+    elif len(sys.argv) == 2 and sys.argv[1] == '-f':
         valid_wlist = read_words('de_words.txt')
         filter_tweets('switch', valid_wlist)
     else:
