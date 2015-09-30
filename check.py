@@ -81,7 +81,7 @@ class Checker:
 
 
     def log(self, text, tid, uid, de_list):
-        print tweet['text'].encode('utf-8')
+        print text.encode('utf-8')
         print de_list
         ################
         # log the tweet
