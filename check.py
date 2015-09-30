@@ -71,11 +71,11 @@ class Checker:
                 is_switch = any((not t and d) for (t, d) in zip(tr, de)) and tr.count(True) >= tr.count(False)
                 ans.append((is_switch, tr, de))
 
-        for t,(a, tr, de) in zip(tweets, ans):
-            if a:
-                print t.encode('utf-8')
+            for t,(a, tr, de) in zip(tweets, ans):
+                if a:
+                    print t.encode('utf-8')
     #            print tr, de
-        return ans
+        # return ans
 
     def batch(self, stream, size):
         out = []
