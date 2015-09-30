@@ -14,7 +14,7 @@ from segtok.tokenizer import word_tokenizer, split_contractions
 # store potential code_switch user into db
 # check all tweets of these users
 # since there will be other source of tweets, check tweet_id for duplication
-
+# mentions
 
 
 # filter @username, #topic and url
@@ -92,7 +92,7 @@ class Checker:
                                      {'$inc': {'count': 1}}, upsert = True)
 
         # log the mentinos
-        self.switch_mentions.insert
+        # self.switch_mentions.insert()
 
 
 if __name__ == '__main__':
