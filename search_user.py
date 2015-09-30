@@ -6,16 +6,10 @@ import json
 from pymongo import MongoClient
 from pprint import pprint
 
-# NOTES
-# query - RT (süper!)
-# 200 per timeline
-# 10 keywords per query
-# https://dev.twitter.com/oauth/application-only
-# include_entities = False: url, hashtag
 
 # TODO
 # write tweets from the users into DB (add in switch.tweets)
-# 
+# clear redundant tweets (caution)
 
 
 class Searcher:
@@ -38,9 +32,10 @@ class Searcher:
 
     def search_all(self):
         for user in self.users.find({'searched': False}):
-            self.search(user['user_id'])
-            self.users.update({'_id': user['_id']}, {'$set': {'searched': True}})                
-
+            success = self.search(user['user_id'])
+            self.users.update({'_id': user['_id']}, {'$set': {'searched': True}})                    
+            if not success:
+                self.users.update({'user_id': uid}, {'$set': {'flag': True}})
 
     def search(self, uid):
         try:
@@ -49,12 +44,14 @@ class Searcher:
                                     'tweet_id': tweet.id_str,\
                                     'user_id': tweet.author.id_str,\
                                     'indexed': False})
+            return True
         except:
-            print uid
+            return False
 
     def rate_left(self):
         status = self.api.rate_limit_status()
         print status['resources']['statuses']['/statuses/user_timeline']
+
 
 if __name__ == '__main__':
     searcher = Searcher('pwd/search.pwd')
