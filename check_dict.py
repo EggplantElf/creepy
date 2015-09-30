@@ -13,7 +13,9 @@ from segtok.tokenizer import word_tokenizer, split_contractions
 # loose check tweets for the first time
 # store potential code_switch user into db
 # check all tweets of these users
-# LOWERCASE!!!
+# since there will be other source of tweets, check tweet_id for duplication
+
+
 
 # filter @username, #topic and url
 filter_pattern = r'(@|#|https?:)\S*'
@@ -25,10 +27,10 @@ class Checker:
         self.tr_words = set()
         self.load_dict(de_file, tr_file)
         self.client = MongoClient()
-        self.tweets = self.client['twitter_tr']['tweets']
         self.switch_tweets = self.client['switch']['tweets']
         self.switch_users = self.client['switch']['users']
         self.switch_words = self.client['switch']['words']
+        self.switch_mentions = self.client['switch']['mentions']
 
 
     def load_dict(self, de_file, tr_file):
@@ -39,9 +41,10 @@ class Checker:
 
 
 
-    def check(self):
+    def check(self, db):
+        tweets = self.client[db]['tweets']
         i = 0
-        for tweet in self.tweets.find({'indexed': False}): #.limit(batch_size)
+        for tweet in tweets.find({'indexed': False}): #.limit(batch_size)
             # tweets.update({'_id': tweet['_id']}, {'$set': {'indexed': True}})
             i += 1
             text = re.sub(filter_pattern, '', tweet['text'])
@@ -60,7 +63,9 @@ class Checker:
 
             # TODO: make the constraints more configurable
             if tr >= 4 and de >= 1:
-                self.log(tweet, de_list)
+                # only log if the tweet is not already in switch_tweets
+                if not self.switch_tweets.find({'tweet_id': tweet['tweet_id']}):
+                    self.log(tweet, de_list)
 
             if i % 10000 == 0:
                 print '*****************'
@@ -86,7 +91,10 @@ class Checker:
             self.switch_words.update({'word': word},\
                                      {'$inc': {'count': 1}}, upsert = True)
 
+        # log the mentinos
+        self.switch_mentions.insert
+
 
 if __name__ == '__main__':
     checker = Checker('dict_de.txt', 'dict_tr.txt')
-    checker.check()
+    checker.check('twitter_tr')
