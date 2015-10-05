@@ -67,19 +67,25 @@ class Checker:
             trs = self.morph_tr(words)
             des = self.morph_de(words)
             i = 0
-            ans = []
-            for count in counts:
+            # ans = []
+            exit(0)
+            for ((text, tid, uid), count) in zip(batch, counts):
                 tr = trs[i: i + count] # [True, False, False, True]
                 de = des[i: i + count] # [False, True, False, True]
                 ws = words[i: i + count] # [tr, de, xx, tr]
                 i += count
-                is_switch = any((not t and d) for (t, d) in zip(tr, de)) and tr.count(True) >= tr.count(False)
-                ans.append((is_switch, tr, de)) # (True, [True, False, False, True], [False, True, False, True])
+                # is_switch = any((not t and d) for (t, d) in zip(tr, de)) and tr.count(True) >= tr.count(False)
+                # ans.append((is_switch, tr, de)) # (True, [True, False, False, True], [False, True, False, True])
 
-            for (text, tid, uid), (a, tr, de) in zip(batch, ans):
-                if a:
-                    de_list = [w for (w, d) in zip(ws, de) if d]
-                    self.log(text, tid, uid, de_list)
+                # new
+                de_list = [w for (w, d, t) in zip(ws, de, tr) if d and not tr]
+                if de_list and tr.count(True) >= tr.count(False):
+                     self.log(text, tid, uid, de_list)
+
+            # for (text, tid, uid), (a, tr, de) in zip(batch, ans):
+            #     if a:
+            #         de_list = [w for (w, d) in zip(ws, de) if d]
+            #         self.log(text, tid, uid, de_list)
 
 
     def log(self, text, tid, uid, de_list):
