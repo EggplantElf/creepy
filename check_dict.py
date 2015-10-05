@@ -27,10 +27,6 @@ class Checker:
         self.tr_words = set()
         self.load_dict(de_file, tr_file)
         self.client = MongoClient()
-        self.switch_tweets = self.client['switch']['tweets']
-        self.switch_users = self.client['switch']['users']
-        self.switch_words = self.client['switch']['words']
-        self.switch_mentions = self.client['switch']['mentions']
 
 
     def load_dict(self, de_file, tr_file):
@@ -40,6 +36,12 @@ class Checker:
             self.tr_words.add(line.strip())
 
 
+    def save_dict(self, wlist, dict_file):
+        f = open(dict_file, 'w')
+        for w in sorted(wlist):
+            f.write('%s\n' % w)
+        f.close()
+
 
     def check(self, db):
         tweets = self.client[db]['tweets']
@@ -47,7 +49,7 @@ class Checker:
         for tweet in tweets.find({'indexed': False}): #.limit(batch_size)
             # tweets.update({'_id': tweet['_id']}, {'$set': {'indexed': True}})
             i += 1
-            text = re.sub(filter_pattern, '', tweet['text'])
+            text = re.sub(filter_pattern, ' ', tweet['text'])
             total, de, tr = 0, 0, 0
             de_list, tr_list = [], []
             for sent in split_multi(text):
@@ -64,8 +66,8 @@ class Checker:
             # TODO: make the constraints more configurable
             if tr >= 4 and de >= 1:
                 # only log if the tweet is not already in switch_tweets
-                if not self.switch_tweets.find({'tweet_id': tweet['tweet_id']}):
-                    self.log(tweet, de_list)
+                if not self.client['switch']['tweets'].find({'tweet_id': tweet['tweet_id']}):
+                    self.log('switch', tweet, de_list)
 
             if i % 10000 == 0:
                 print '*****************'
@@ -73,26 +75,36 @@ class Checker:
                 print '*****************'
 
 
-    def log(self, tweet, de_list):
+    def log(self, db, tweet, de_list):
         print tweet['text'].encode('utf-8')
         print de_list
         ################
         # log the tweet
-        self.switch_tweets.insert({'tweet_id': tweet['tweet_id'],\
+        db['tweets'].insert({'tweet_id': tweet['tweet_id'],\
                                    'user_id' :tweet['user_id'],\
                                    'text': tweet['text'],\
                                    'words': de_list})
         # log the user
-        self.switch_users.update({'user_id': tweet['user_id']},\
+        db['users'].update({'user_id': tweet['user_id']},\
                                  {'$inc': {'count': 1}}, upsert = True)
 
         # log the german words
         for word in de_list:
-            self.switch_words.update({'word': word},\
+            db['words'].update({'word': word},\
                                      {'$inc': {'count': 1}}, upsert = True)
 
-        # log the mentinos
-        # self.switch_mentions.insert()
+
+
+    def filter_tweets(self, db, strict_db):
+        tweets = self.client[db]['tweets']
+        users = self.client[db]['users']
+        words = self.client[db]['words']
+        for tweet in tweets.find():
+            valid_words = [w for w in tweet['words'] if w in self.de_words]
+            if valid_words:
+                log(strict_db, tweet, valid_words)
+
+
 
 
 if __name__ == '__main__':

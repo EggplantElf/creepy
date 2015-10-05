@@ -68,7 +68,6 @@ class Checker:
             des = self.morph_de(words)
             i = 0
             # ans = []
-            exit(0)
             for ((text, tid, uid), count) in zip(batch, counts):
                 tr = trs[i: i + count] # [True, False, False, True]
                 de = des[i: i + count] # [False, True, False, True]
@@ -90,7 +89,7 @@ class Checker:
 
     def log(self, text, tid, uid, de_list):
         print text.encode('utf-8')
-        print de_list
+        print ','.join(de_list).encode('utf-8')
         ################
         # log the tweet
         self.target_db['tweets'].insert({'tweet_id': tid,\
