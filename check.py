@@ -206,6 +206,6 @@ if __name__ == '__main__':
     source_db = sys.argv[1]
     target_db = 'new_switch'
     checker = Checker(source_db, target_db, 'freq_de.txt', 'freq_tr.txt', 5)
-    # checker.check()
+    checker.check()
     # checker.morph_tr(['kullanan', 'arkadaşlar', 'kuklasi'])
-    checker.check_single('@DumbledogeLoL eigentlich Güzel yayınlar krdeşim şu bağış Deutsch gelince gelen seyi biraz ufaltsan tkm svşı sırasında bir anda beliriyor hiç bir şey göremiyrz')
+    # checker.check_single('@DumbledogeLoL eigentlich Güzel yayınlar krdeşim şu bağış Deutsch gelince gelen seyi biraz ufaltsan tkm svşı sırasında bir anda beliriyor hiç bir şey göremiyrz')
