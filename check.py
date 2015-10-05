@@ -77,7 +77,7 @@ class Checker:
                 # ans.append((is_switch, tr, de)) # (True, [True, False, False, True], [False, True, False, True])
 
                 # new
-                de_list = [w for (w, d, t) in zip(ws, de, tr) if d and not tr]
+                de_list = [w for (w, d, t) in zip(ws, de, tr) if d and not t]
                 if de_list and tr.count(True) >= tr.count(False):
                      self.log(text, tid, uid, de_list)
 
@@ -96,9 +96,9 @@ class Checker:
         de = self.morph_de(words)
         print tr
         print de
-        de_list = [w for (w, d, t) in zip(words, de, tr) if d and not tr]
+        de_list = [w for (w, d, t) in zip(words, de, tr) if d and not t]
         print de_list
-        if de_list and tr.count(True) >= tr.count(False):
+        if de_list and tr.count(True) >= 5:
              # self.log(text, tid, uid, de_list)
              print 'find one'
 
@@ -208,4 +208,4 @@ if __name__ == '__main__':
     checker = Checker(source_db, target_db, 'freq_de.txt', 'freq_tr.txt', 5)
     # checker.check()
     # checker.morph_tr(['kullanan', 'arkadaşlar', 'kuklasi'])
-    checker.check_single('@DumbledogeLoL Güzel yayınlar krdeşim şu bağış Deutsch gelince gelen seyi biraz ufaltsan tkm svşı sırasında bir anda beliriyor hiç bir şey göremiyrz')
+    checker.check_single('@DumbledogeLoL eigentlich Güzel yayınlar krdeşim şu bağış Deutsch gelince gelen seyi biraz ufaltsan tkm svşı sırasında bir anda beliriyor hiç bir şey göremiyrz')
