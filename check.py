@@ -13,9 +13,12 @@ from segtok.tokenizer import word_tokenizer, split_contractions
 import pexpect
 import subprocess
 
+# NOTE:
+# Title() for morph analysis, lower() for dictionary lookup
+
 
 # filter @username, #topic and url
-filter_pattern = r'(@|#|https?:)\S*'
+filter_pattern = re.compile(r'(@|#|https?:)\S*')
 
 
 
@@ -57,24 +60,23 @@ class Checker:
         batch_num = 1
         size = 1000
         # for each batch
-        for tweets in self.batch(self.tweet_stream(), size):
+        for batch in self.batch(self.tweet_stream(), size):
             print batch_num * size 
             batch_num += 1
-            words, counts = self.tokenize(tweets)
-            wlist = words.strip().split()
+            words, counts = self.tokenize(batch)
             trs = self.morph_tr(words)
             des = self.morph_de(words)
             i = 0
             ans = []
             for count in counts:
-                tr = trs[i: i + count]
-                de = des[i: i + count]
-                ws = wlist[i: i + count]
+                tr = trs[i: i + count] # [True, False, False, True]
+                de = des[i: i + count] # [False, True, False, True]
+                ws = words[i: i + count] # [tr, de, xx, tr]
                 i += count
                 is_switch = any((not t and d) for (t, d) in zip(tr, de)) and tr.count(True) >= tr.count(False)
-                ans.append((is_switch, tr, de))
+                ans.append((is_switch, tr, de)) # (True, [True, False, False, True], [False, True, False, True])
 
-            for (text, tid, uid), (a, tr, de) in zip(tweets, ans):
+            for (text, tid, uid), (a, tr, de) in zip(batch, ans):
                 if a:
                     de_list = [w for (w, d) in zip(ws, de) if d]
                     self.log(text, tid, uid, de_list)
@@ -113,52 +115,70 @@ class Checker:
         if out:
             yield out
 
-
+    # DONE
+    # input decoded text
+    # output incoded wordlist, lowercase
     def tokenize(self, tweets):
         """
         tokenize the text and filter the @username (and punctuation, smiley ...), leave only words
         """
 
         counts = [] # [5, 12, 0, 3, ...] the counts of valid words for each tweet
-        out = '' # one-word-per-line string of the tokenized words for morph analysis
+        words = [] # list of words
+        # out = '' # one-word-per-line string of the tokenized words for morph analysis
         
         for (text, tid, uid) in tweets:
             i = 0
-            text = re.sub(filter_pattern, '', text)
+            text = filter_pattern.sub(' ', text)
             for sent in split_multi(text):
                 for token in word_tokenizer(sent):
-                    out += (token.encode('utf-8', 'ignore').title() + '\n') # Capitalized
+                    words.append(token.encode('utf-8', 'ignore').lower())
                     i += 1
             counts.append(i)
-        return out, counts
+        return words, counts
 
-    # does it case sensitive?
+
+
+    # DONE
+    # input: list of words in the batch (encoded)
+    # output: list of whether each word is a turkish word (either in morph or dict)
     def morph_tr(self, words):
         """
         morphological analysis for turkish words
         """
+
+        input_str = '\n'.join(w.title() for w in words) + '\n'
         cmd = './bin/lookup -d -q -f bin/checker.script'
         lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-        output = lookup.communicate(input=words)[0]
+        output = lookup.communicate(input=input_str)[0]
         morphs = output.strip().split('\n\n')
-        assert len(morphs) == len(words.strip().split('\n'))
-        morph_ans = map(lambda x: x[-2:] != '+?', morphs)
-        dict_ans = [w.lower() in self.tr_dict for w in words.strip().split()]
-        return [any(pair) for pair in zip(dict_ans, morph_ans)]
+        assert len(morphs) == len(words)
+        # true if not ends with '+?', no matter how many analysis for a word
+        morph_ans = map(lambda x: x.endswith('+?'), morphs)
+        dict_ans = [w in self.tr_dict for w in words]
+        return [any(pair) for pair in zip(morph_ans, dict_ans)]
 
-    # already capitalized
+    # DONE
+    # input: list of words in the batch
+    # output: list of whether each word is a german word (either in morph or dict)
     def morph_de(self, words):
         """
         morphological analysis for german words, exclude punctuation and numbers
         """
+
+        input_str = '\n'.join(w.title() for w in words) + '\n'
         cmd = './bin/_run_smor.sh 2> /dev/null'
         lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-        output = lookup.communicate(input=words)[0]
+        output = lookup.communicate(input=input_str)[0]
         morphs = output.strip().split('\n\n')
-        assert len(morphs) == len(words.strip().split('\n'))
+        assert len(morphs) == len(words)
+        # 
         morph_ans = map(lambda x: x.split('\t')[2] not in ['_', '<+PUNCT>', '<+CARD>', '<+SYMBOL>'], morphs)
-        dict_ans = [w.lower() in self.de_dict for w in words.strip().split()]
-        return [any(pair) for pair in zip(dict_ans, morph_ans)]
+        dict_ans = [w in self.de_dict for w in words]
+        return [any(pair) for pair in zip(morph_ans, dict_ans)]
+
+
+
 
 if __name__ == '__main__':
     source_db = sys.argv[1]
