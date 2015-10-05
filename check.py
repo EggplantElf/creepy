@@ -175,9 +175,11 @@ class Checker:
         lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         output = lookup.communicate(input=input_str)[0]
         morphs = output.strip().split('\n\n')
+        print morphs
+        print len(words)
         assert len(morphs) == len(words)
         # true if not ends with '+?', no matter how many analysis for a word
-        morph_ans = map(lambda x: not x.endswith('+?'), morphs)
+        morph_ans = map(lambda x: not x.endswith('*UNKONWN*'), morphs)
         dict_ans = [w in self.tr_dict for w in words]
         return [any(pair) for pair in zip(morph_ans, dict_ans)]
 
