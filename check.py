@@ -205,7 +205,7 @@ class Checker:
 
 if __name__ == '__main__':
     source_db = sys.argv[1]
-    target_db = 'new_switch'
+    target_db = sys.argv[2]
     checker = Checker(source_db, target_db, 'freq_de.txt', 'freq_tr.txt', 5)
     checker.check()
     # checker.morph_tr(['kullanan', 'arkadaşlar', 'kuklasi'])
