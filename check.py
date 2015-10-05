@@ -107,7 +107,7 @@ class Checker:
 
     def log(self, text, tid, uid, de_list):
         print text.encode('utf-8')
-        print ','.join(de_list)
+        print '[' + ', '.join(de_list) + ']'
         ################
         # log the tweet
         self.target_db['tweets'].insert({'tweet_id': tid,\
@@ -170,7 +170,8 @@ class Checker:
         morphological analysis for turkish words
         """
         input_str = '\n'.join(w.title() for w in words) + '\n'
-        cmd = './bin/lookup -d -q -f bin/checker.script'
+        # cmd = './bin/lookup -d -q -f bin/checker.script'
+        cmd = './bin/Morph-Pipeline/lookup -d -q -f bin/Morph-Pipeline/test-script.txt'
         lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         output = lookup.communicate(input=input_str)[0]
         morphs = output.strip().split('\n\n')
@@ -196,7 +197,7 @@ class Checker:
         assert len(morphs) == len(words)
         # 
         morph_ans = map(lambda x: x.split('\t')[2] not in ['_', '<+PUNCT>', '<+CARD>', '<+SYMBOL>'], morphs)
-        dict_ans = [w in self.de_dict for w in words]
+        # dict_ans = [w in self.de_dict for w in words]
         # return [any(pair) for pair in zip(morph_ans, dict_ans)]
         return morph_ans
 
@@ -207,6 +208,6 @@ if __name__ == '__main__':
     source_db = sys.argv[1]
     target_db = sys.argv[2]
     checker = Checker(source_db, target_db, 'freq_de.txt', 'freq_tr.txt', 5)
-    checker.check()
+    # checker.check()
     # checker.morph_tr(['kullanan', 'arkadaşlar', 'kuklasi'])
-    # checker.check_single('@DumbledogeLoL eigentlich Güzel yayınlar krdeşim şu bağış Deutsch gelince gelen seyi biraz ufaltsan tkm svşı sırasında bir anda beliriyor hiç bir şey göremiyrz')
+    checker.check_single('@DumbledogeLoL eigentlich Güzel yayınlar krdeşim şu bağış Deutsch gelince gelen seyi biraz ufaltsan tkm svşı sırasında bir anda beliriyor hiç bir şey göremiyrz')
