@@ -107,7 +107,7 @@ class Checker:
 
     def log(self, text, tid, uid, de_list):
         print text.encode('utf-8')
-        print ','.join(de_list).encode('utf-8')
+        print ','.join(de_list)
         ################
         # log the tweet
         self.target_db['tweets'].insert({'tweet_id': tid,\
