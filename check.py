@@ -151,7 +151,6 @@ class Checker:
         """
         morphological analysis for turkish words
         """
-
         input_str = '\n'.join(w.title() for w in words) + '\n'
         cmd = './bin/lookup -d -q -f bin/checker.script'
         lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
@@ -159,7 +158,7 @@ class Checker:
         morphs = output.strip().split('\n\n')
         assert len(morphs) == len(words)
         # true if not ends with '+?', no matter how many analysis for a word
-        morph_ans = map(lambda x: x.endswith('+?'), morphs)
+        morph_ans = map(lambda x: not x.endswith('+?'), morphs)
         dict_ans = [w in self.tr_dict for w in words]
         return [any(pair) for pair in zip(morph_ans, dict_ans)]
 
@@ -189,4 +188,5 @@ if __name__ == '__main__':
     source_db = sys.argv[1]
     target_db = 'new_switch'
     checker = Checker(source_db, target_db, 'freq_de.txt', 'freq_tr.txt', 5)
-    checker.check()
+    # checker.check()
+    checker.morph_tr(['kullanan', 'arkadaşlar', 'kuklasi'])
