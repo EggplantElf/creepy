@@ -86,6 +86,24 @@ class Checker:
             #         de_list = [w for (w, d) in zip(ws, de) if d]
             #         self.log(text, tid, uid, de_list)
 
+    # for debugging
+    def check_single(self, text):
+        text = text.decode('utf-8')
+        words, counts = self.tokenize([(text, 'tid', 'uid')])
+        # print words
+        # print counts
+        tr = self.morph_tr(words)
+        de = self.morph_de(words)
+        print trs
+        print des
+        de_list = [w for (w, d, t) in zip(ws, de, tr) if d and not tr]
+        print de_list
+        if de_list and tr.count(True) >= tr.count(False):
+             # self.log(text, tid, uid, de_list)
+             print 'find one'
+
+
+
 
     def log(self, text, tid, uid, de_list):
         print text.encode('utf-8')
@@ -189,4 +207,5 @@ if __name__ == '__main__':
     target_db = 'new_switch'
     checker = Checker(source_db, target_db, 'freq_de.txt', 'freq_tr.txt', 5)
     # checker.check()
-    checker.morph_tr(['kullanan', 'arkadaşlar', 'kuklasi'])
+    # checker.morph_tr(['kullanan', 'arkadaşlar', 'kuklasi'])
+    checker.check_single('@DumbledogeLoL Güzel yayınlar krdeşim şu bağış Deutsch gelince gelen seyi biraz ufaltsan tkm svşı sırasında bir anda beliriyor hiç bir şey göremiyrz')
