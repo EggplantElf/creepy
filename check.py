@@ -170,8 +170,8 @@ class Checker:
         morphological analysis for turkish words
         """
         input_str = '\n'.join(w.title() for w in words) + '\n'
-        # cmd = './bin/lookup -d -q -f bin/checker.script'
-        cmd = './bin/Morph-Pipeline/lookup -d -q -f bin/Morph-Pipeline/test-script.txt'
+        cmd = './bin/lookup -d -q -f bin/checker.script'
+        # cmd = './bin/Morph-Pipeline/lookup -d -q -f bin/Morph-Pipeline/test-script.txt'
         lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         output = lookup.communicate(input=input_str)[0]
         morphs = output.strip().split('\n\n')
@@ -179,7 +179,8 @@ class Checker:
         print len(words)
         assert len(morphs) == len(words)
         # true if not ends with '+?', no matter how many analysis for a word
-        morph_ans = map(lambda x: not x.endswith('*UNKONWN*'), morphs)
+        # morph_ans = map(lambda x: not x.endswith('*UNKONWN*'), morphs)
+        morph_ans = map(lambda x: not x.endswith('_?'), morphs)
         dict_ans = [w in self.tr_dict for w in words]
         return [any(pair) for pair in zip(morph_ans, dict_ans)]
 
