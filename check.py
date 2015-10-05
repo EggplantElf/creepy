@@ -198,7 +198,7 @@ class Checker:
         morph_ans = map(lambda x: x.split('\t')[2] not in ['_', '<+PUNCT>', '<+CARD>', '<+SYMBOL>'], morphs)
         dict_ans = [w in self.de_dict for w in words]
         # return [any(pair) for pair in zip(morph_ans, dict_ans)]
-        return morphs_ans
+        return morph_ans
 
 
 
