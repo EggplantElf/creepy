@@ -94,9 +94,9 @@ class Checker:
         # print counts
         tr = self.morph_tr(words)
         de = self.morph_de(words)
-        print trs
-        print des
-        de_list = [w for (w, d, t) in zip(ws, de, tr) if d and not tr]
+        print tr
+        print de
+        de_list = [w for (w, d, t) in zip(words, de, tr) if d and not tr]
         print de_list
         if de_list and tr.count(True) >= tr.count(False):
              # self.log(text, tid, uid, de_list)
