@@ -16,6 +16,8 @@ import subprocess
 # NOTE:
 # Title() for morph analysis, lower() for dictionary lookup
 # ALWAYS: decode().lower().encode()
+# encapsule the lower() and title()
+
 
 # filter @username, #topic and url
 filter_pattern = re.compile(r'(@|#|https?:)\S*')
@@ -197,6 +199,11 @@ class Checker:
         lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         output = lookup.communicate(input=input_str)[0]
         morphs = output.strip().split('\n\n')
+        if len(morphs) != len(words):
+            print 'morphs:'
+            print morphs
+            print 'words:'
+            print words
         assert len(morphs) == len(words)
         # 
         morph_ans = map(lambda x: is_de_word(x), morphs)
