@@ -175,8 +175,8 @@ class Checker:
         lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         output = lookup.communicate(input=input_str)[0]
         morphs = output.strip().split('\n\n')
-        print morphs
-        print len(words)
+        # print morphs
+        # print len(words)
         assert len(morphs) == len(words)
         # true if not ends with '+?', no matter how many analysis for a word
         morph_ans = map(lambda x: not x.endswith('*UNKNOWN*'), morphs)
@@ -211,6 +211,6 @@ if __name__ == '__main__':
     source_db = sys.argv[1]
     target_db = sys.argv[2]
     checker = Checker(source_db, target_db, 'freq_de.txt', 'freq_tr.txt', 5)
-    # checker.check()
+    checker.check()
     # checker.morph_tr(['kullanan', 'arkadaşlar', 'kuklasi'])
-    checker.check_single('@DumbledogeLoL offensichtlich Güzel yayınlar krdeşim şu bağış Deutsch gelince gelen seyi biraz ufaltsan tkm svşı sırasında bir anda beliriyor hiç bir şey göremiyrz')
+    # checker.check_single('@DumbledogeLoL offensichtlich Güzel yayınlar krdeşim şu bağış Deutsch gelince gelen seyi biraz ufaltsan tkm svşı sırasında bir anda beliriyor hiç bir şey göremiyrz')
