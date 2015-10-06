@@ -211,6 +211,7 @@ def is_de_word(morph_str):
         return False
     elif morphs[1].startswith('<GUESSER>'):
         return False
+    return True
 
 
 if __name__ == '__main__':
