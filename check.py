@@ -205,16 +205,24 @@ class Checker:
         return morph_ans
 
 # try to rule out number, punctuation, proper noun, guess, abbreviation, and weird composition
+# use regex to catch all
+
+bad_pattern = re.compile(r'_|<\+PUNCT>|<\+CARD>|<\+SYMBOL>|<\+NPROP>|<GUESSER>|<\^ABBR>|<TRUNC>')
+
 def is_de_word(morph_str):
-    morphs = morph_str.split('\t')
-    if morphs[2] in ['_', '<+PUNCT>', '<+CARD>', '<+SYMBOL>', '<+NPROP>']:
-        return False
-    elif morphs[1].startswith('<GUESSER>')\
-         or morphs[1].endswith('<^ABBR>')\
-         or '<TRUNC>' in morphs[1]:
-        return False
-    else:
-        return True
+    return not bad_pattern.search(morph_str)
+
+
+# def is_de_word(morph_str):
+#     morphs = morph_str.split('\t')
+#     if morphs[2] in ['_', '<+PUNCT>', '<+CARD>', '<+SYMBOL>', '<+NPROP>']:
+#         return False
+#     elif morphs[1].startswith('<GUESSER>')\
+#          or morphs[1].endswith('<^ABBR>')\
+#          or '<TRUNC>' in morphs[1]:
+#         return False
+#     else:
+#         return True
 
 
 if __name__ == '__main__':
