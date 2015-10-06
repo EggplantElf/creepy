@@ -180,6 +180,7 @@ class Checker:
         assert len(morphs) == len(words)
         # true if not ends with '+?', no matter how many analysis for a word
         morph_ans = map(lambda x: not x.endswith('*UNKNOWN*'), morphs)
+        # morph_ans = map(lambda x: not x.endswith('_?'), morphs)
         dict_ans = [w in self.tr_dict for w in words]
         return [any(pair) for pair in zip(morph_ans, dict_ans)]
 
