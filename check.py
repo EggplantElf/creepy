@@ -21,17 +21,23 @@ import subprocess
 filter_pattern = re.compile(r'(@|#|https?:)\S*')
 
 
+# read a freq file
+# def read_dict(dict_file, min_freq):
+#     d = set()
+#     for line in open(dict_file):
+#         tmp = line.strip().split()
+#         word = tmp[0]
+#         freq = int(tmp[1])
+#         if freq >= min_freq:
+#             d.add(word)
+#     return d
 
-def read_dict(dict_file, min_freq):
+
+def read_dict(dict_file):
     d = set()
     for line in open(dict_file):
-        tmp = line.strip().split()
-        word = tmp[0]
-        freq = int(tmp[1])
-        if freq >= min_freq:
-            d.add(word)
+        d.add(line.strip())
     return d
-
 
 class Checker:
     """
@@ -58,7 +64,7 @@ class Checker:
         analyzes every german word as well, if too slow, then change to analyze only non-turkish words
         """
         batch_num = 1
-        size = 1000
+        size = 10000
         # for each batch
         for batch in self.batch(self.tweet_stream(), size):
             print batch_num * size 
@@ -209,7 +215,7 @@ class Checker:
 
 # try to rule out number, punctuation, proper noun, guess, abbreviation, and weird composition
 # use regex to catch all
-bad_pattern = re.compile(r'_|<\+PUNCT>|<\+CARD>|<\+SYMBOL>|<\+NPROP>|<GUESSER>|<\^ABBR>|<TRUNC>')
+bad_pattern = re.compile(r'_|<\+PUNCT>|<\+CARD>|<\+SYMBOL>|<\+NPROP>|<GUESSER>|<\^ABBR>|<TRUNC>|in<SUFF>')
 
 def is_de_word(morph_str):
     return not bad_pattern.search(morph_str)
@@ -230,7 +236,7 @@ def is_de_word(morph_str):
 if __name__ == '__main__':
     source_db = sys.argv[1]
     target_db = sys.argv[2]
-    checker = Checker(source_db, target_db, 'freq_de.txt', 'freq_tr.txt', 5)
+    checker = Checker(source_db, target_db, 'dict_de.txt', 'dict_tr.txt', 5)
     checker.check()
     # checker.morph_tr(['kullanan', 'arkadaşlar', 'kuklasi'])
     # checker.check_single('@DumbledogeLoL offensichtlich Güzel yayınlar krdeşim şu bağış Deutsch gelince gelen seyi biraz ufaltsan tkm svşı sırasında bir anda beliriyor hiç bir şey göremiyrz')
