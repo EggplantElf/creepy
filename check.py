@@ -15,7 +15,7 @@ import subprocess
 
 # NOTE:
 # Title() for morph analysis, lower() for dictionary lookup
-
+# ALWAYS: decode().lower().encode()
 
 # filter @username, #topic and url
 filter_pattern = re.compile(r'(@|#|https?:)\S*')
@@ -155,7 +155,7 @@ class Checker:
             text = filter_pattern.sub(' ', text)
             for sent in split_multi(text):
                 for token in word_tokenizer(sent):
-                    words.append(token.encode('utf-8', 'ignore').lower())
+                    words.append(token.lower().encode('utf-8', 'ignore'))
                     i += 1
             counts.append(i)
         return words, counts
@@ -169,7 +169,7 @@ class Checker:
         """
         morphological analysis for turkish words
         """
-        input_str = '\n'.join(w.title() for w in words) + '\n'
+        input_str = '\n'.join(w.decode('utf-8').title().encode('utf-8') for w in words) + '\n'
         # cmd = './bin/lookup -d -q -f bin/checker.script'
         cmd = './bin/Morph-Pipeline/lookup -d -q -f bin/Morph-Pipeline/test-script.txt'
         lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
@@ -204,9 +204,11 @@ class Checker:
         # return [any(pair) for pair in zip(morph_ans, dict_ans)]
         return morph_ans
 
+
+
+
 # try to rule out number, punctuation, proper noun, guess, abbreviation, and weird composition
 # use regex to catch all
-
 bad_pattern = re.compile(r'_|<\+PUNCT>|<\+CARD>|<\+SYMBOL>|<\+NPROP>|<GUESSER>|<\^ABBR>|<TRUNC>')
 
 def is_de_word(morph_str):
