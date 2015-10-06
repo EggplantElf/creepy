@@ -199,12 +199,18 @@ class Checker:
         morphs = output.strip().split('\n\n')
         assert len(morphs) == len(words)
         # 
-        morph_ans = map(lambda x: x.split('\t')[2] not in ['_', '<+PUNCT>', '<+CARD>', '<+SYMBOL>'], morphs)
+        morph_ans = map(lambda x: is_de_word(x), morphs)
         # dict_ans = [w in self.de_dict for w in words]
         # return [any(pair) for pair in zip(morph_ans, dict_ans)]
         return morph_ans
 
-
+# no number, punctuation, proper noun, guess
+def is_de_word(morph_str):
+    morphs = morph_str.split('\t')
+    if morphs[2] in ['_', '<+PUNCT>', '<+CARD>', '<+SYMBOL>', '<+NPROP>']:
+        return False
+    elif morphs[1].startswith('<GUESSER>'):
+        return False
 
 
 if __name__ == '__main__':
