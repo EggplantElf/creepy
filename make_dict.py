@@ -2,18 +2,23 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import re
 # TODO:
-# numeral-alphabet only
+
+# very strict match of english, german and turkish words
+alphabet = re.compile(r'^[a-zA-ZßäöüÄÖÜçÇşŞğĞıİ]+$')
 
 
+def valid(word):
+    return alphabet.match(word)
 
 def simple_make(dict_file, freq_file, min_freq):
     d = set()
     for line in open(freq_file):
         tmp = line.strip().split()
         word, freq = tmp[0], int(tmp[1])
-        if freq >= min_freq:
-            d.add(word)
+        if valid(word) and freq >= min_freq:
+            d.add(word.decode('utf-8').lower().encode('utf-8'))
     # return d
     f = open(dict_file, 'w')
     for w in sorted(d):
@@ -28,13 +33,13 @@ def diff_make(dict_file, target_freq_file, subst_freq_file, min_target_freq, min
         tmp = line.strip().split()
         word, freq = tmp[0], int(tmp[1])
         if freq >= min_subst_freq:
-            s.add(word)
+            s.add(word.decode('utf-8').lower().encode('utf-8'))
 
     for line in open(target_freq_file):
         tmp = line.strip().split()
         word, freq = tmp[0], int(tmp[1])
-        if freq >= min_subst_freq and word not in s:
-            d.add(word)
+        if valid(word) and freq >= min_subst_freq and word not in s:
+            d.add(word.decode('utf-8').lower().encode('utf-8'))
     # return d
     f = open(dict_file, 'w')
     for w in sorted(d):
