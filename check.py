@@ -204,14 +204,17 @@ class Checker:
         # return [any(pair) for pair in zip(morph_ans, dict_ans)]
         return morph_ans
 
-# no number, punctuation, proper noun, guess
+# try to rule out number, punctuation, proper noun, guess, abbreviation, and weird composition
 def is_de_word(morph_str):
     morphs = morph_str.split('\t')
     if morphs[2] in ['_', '<+PUNCT>', '<+CARD>', '<+SYMBOL>', '<+NPROP>']:
         return False
-    elif morphs[1].startswith('<GUESSER>'):
+    elif morphs[1].startswith('<GUESSER>')\
+         or morphs[1].endswith('<^ABBR>')\
+         or '<TRUNC>' in morphs[1]:
         return False
-    return True
+    else:
+        return True
 
 
 if __name__ == '__main__':
