@@ -179,7 +179,7 @@ class Checker:
         print len(words)
         assert len(morphs) == len(words)
         # true if not ends with '+?', no matter how many analysis for a word
-        morph_ans = map(lambda x: not x.endswith('*UNKONWN*'), morphs)
+        morph_ans = map(lambda x: not x.endswith('*UNKNOWN*'), morphs)
         dict_ans = [w in self.tr_dict for w in words]
         return [any(pair) for pair in zip(morph_ans, dict_ans)]
 
@@ -212,4 +212,4 @@ if __name__ == '__main__':
     checker = Checker(source_db, target_db, 'freq_de.txt', 'freq_tr.txt', 5)
     # checker.check()
     # checker.morph_tr(['kullanan', 'arkadaşlar', 'kuklasi'])
-    checker.check_single('@DumbledogeLoL eigentlich Güzel yayınlar krdeşim şu bağış Deutsch gelince gelen seyi biraz ufaltsan tkm svşı sırasında bir anda beliriyor hiç bir şey göremiyrz')
+    checker.check_single('@DumbledogeLoL offensichtlich Güzel yayınlar krdeşim şu bağış Deutsch gelince gelen seyi biraz ufaltsan tkm svşı sırasında bir anda beliriyor hiç bir şey göremiyrz')
