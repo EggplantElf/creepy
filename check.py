@@ -22,19 +22,6 @@ import subprocess
 # filter @username, #topic and url
 filter_pattern = re.compile(r'(@|#|https?:)\S*')
 
-
-# read a freq file
-# def read_dict(dict_file, min_freq):
-#     d = set()
-#     for line in open(dict_file):
-#         tmp = line.strip().split()
-#         word = tmp[0]
-#         freq = int(tmp[1])
-#         if freq >= min_freq:
-#             d.add(word)
-#     return d
-
-
 def read_dict(dict_file):
     d = set()
     for line in open(dict_file):
@@ -72,8 +59,8 @@ class Checker:
             print batch_num * size 
             batch_num += 1
             words, counts = self.tokenize(batch)
-            trs = self.morph_tr(words)
-            des = self.morph_de(words)
+            trs = self.check_tr(words)
+            des = self.check_de(words)
             i = 0
             # ans = []
             for ((text, tid, uid), count) in zip(batch, counts):
@@ -81,18 +68,12 @@ class Checker:
                 de = des[i: i + count] # [False, True, False, True]
                 ws = words[i: i + count] # [tr, de, xx, tr]
                 i += count
-                # is_switch = any((not t and d) for (t, d) in zip(tr, de)) and tr.count(True) >= tr.count(False)
-                # ans.append((is_switch, tr, de)) # (True, [True, False, False, True], [False, True, False, True])
 
-                # new
                 de_list = [w for (w, d, t) in zip(ws, de, tr) if d and not t]
                 if de_list and tr.count(True) >= tr.count(False):
                      self.log(text, tid, uid, de_list)
 
-            # for (text, tid, uid), (a, tr, de) in zip(batch, ans):
-            #     if a:
-            #         de_list = [w for (w, d) in zip(ws, de) if d]
-            #         self.log(text, tid, uid, de_list)
+
 
     # for debugging
     def check_single(self, text):
@@ -100,8 +81,8 @@ class Checker:
         words, counts = self.tokenize([(text, 'tid', 'uid')])
         # print words
         # print counts
-        tr = self.morph_tr(words)
-        de = self.morph_de(words)
+        tr = self.check_tr(words)
+        de = self.check_de(words)
         print tr
         print de
         de_list = [w for (w, d, t) in zip(words, de, tr) if d and not t]
@@ -170,10 +151,9 @@ class Checker:
 
 
 
-    # DONE
     # input: list of words in the batch (encoded)
     # output: list of whether each word is a turkish word (either in morph or dict)
-    def morph_tr(self, words):
+    def check_tr(self, words):
         """
         morphological analysis for turkish words
         """
@@ -192,52 +172,35 @@ class Checker:
         dict_ans = [w in self.tr_dict for w in words]
         return [any(pair) for pair in zip(morph_ans, dict_ans)]
 
-    # DONE
-    # input: list of words in the batch
-    # output: list of whether each word is a german word (either in morph or dict)
-    def morph_de(self, words):
+
+    def check_de(self, words):
         """
         morphological analysis for german words, exclude punctuation and numbers
         """
 
-        input_str = '\n'.join(w.title() for w in words) + '\n'
+        input_str = '\n'.join(w.decode('utf-8').title().encode('utf-8') for w in words) + '\n'
         cmd = './bin/_run_smor.sh 2> /dev/null'
         lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         output = lookup.communicate(input=input_str)[0]
         morphs = output.strip().split('\n\n')
-        if len(morphs) != len(words):
-            print 'morphs:'
-            print morphs
-            print 'words:'
-            print words
         assert len(morphs) == len(words)
-        # 
-        morph_ans = map(lambda x: is_de_word(x), morphs)
-        # dict_ans = [w in self.de_dict for w in words]
-        # return [any(pair) for pair in zip(morph_ans, dict_ans)]
+        morph_ans = map(lambda (w, m): self.is_de_word(w, m), zip(words, morphs))
         return morph_ans
-
 
 
 
 # try to rule out number, punctuation, proper noun, guess, abbreviation, and weird composition
 # use regex to catch all
-bad_pattern = re.compile(r'_|<\+PUNCT>|<\+CARD>|<\+SYMBOL>|<\+NPROP>|<GUESSER>|<\^ABBR>|<TRUNC>|in<SUFF>')
+pattern1 = re.compile(r'_|<\+PUNCT>|<\+CARD>|<\+SYMBOL>|<\+NPROP>|<GUESSER>|<\^ABBR>')
+pattern2 = re.compile(r'<NN>|<V>|<SUFF>|<VPART>') # check the compound words in dictionary, since morph are too loose
 
-def is_de_word(morph_str):
-    return not bad_pattern.search(morph_str)
-
-
-# def is_de_word(morph_str):
-#     morphs = morph_str.split('\t')
-#     if morphs[2] in ['_', '<+PUNCT>', '<+CARD>', '<+SYMBOL>', '<+NPROP>']:
-#         return False
-#     elif morphs[1].startswith('<GUESSER>')\
-#          or morphs[1].endswith('<^ABBR>')\
-#          or '<TRUNC>' in morphs[1]:
-#         return False
-#     else:
-#         return True
+    def is_de_word(self, word, morph_str):
+        for line in morph_str.split('\n'):
+            if pattern1.search(line):
+                return False
+            elif pattern2.search(line):
+                return (word in self.de_dict)
+        return True
 
 
 if __name__ == '__main__':
@@ -245,5 +208,3 @@ if __name__ == '__main__':
     target_db = sys.argv[2]
     checker = Checker(source_db, target_db, 'dict_de.txt', 'dict_tr.txt', 5)
     checker.check()
-    # checker.morph_tr(['kullanan', 'arkadaşlar', 'kuklasi'])
-    # checker.check_single('@DumbledogeLoL offensichtlich Güzel yayınlar krdeşim şu bağış Deutsch gelince gelen seyi biraz ufaltsan tkm svşı sırasında bir anda beliriyor hiç bir şey göremiyrz')
