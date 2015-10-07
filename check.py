@@ -34,12 +34,12 @@ class Checker:
     it analyzes e.g. every 1000 tweets in one go, then reloads the analyzer
     """
 
-    def __init__(self, source_db, target_db, de_dict_file, tr_dict_file, min_freq = 5):
+    def __init__(self, source_db, target_db, de_dict_file, tr_dict_file):
         self.client = MongoClient()
         self.source_db = self.client[source_db]
         self.target_db = self.client[target_db]
-        self.de_dict = read_dict(de_dict_file, min_freq)
-        self.tr_dict = read_dict(tr_dict_file, min_freq)
+        self.de_dict = read_dict(de_dict_file)
+        self.tr_dict = read_dict(tr_dict_file)
 
 
     # generator for reading tweets from db
@@ -206,5 +206,5 @@ pattern2 = re.compile(r'<NN>|<V>|<SUFF>|<VPART>') # check the compound words in 
 if __name__ == '__main__':
     source_db = sys.argv[1]
     target_db = sys.argv[2]
-    checker = Checker(source_db, target_db, 'dict_de.txt', 'dict_tr.txt', 5)
+    checker = Checker(source_db, target_db, 'dict_de.txt', 'dict_tr.txt')
     checker.check()
