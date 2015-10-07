@@ -52,6 +52,8 @@ class Checker:
     # generator for reading tweets from db
     def tweet_stream(self):
         for tweet in self.source_db['tweets'].find():
+            # change the state of the tweet as indexed (checked)
+            self.source_db['tweets'].update({'_id': tweet['_id']}, {'$set': {'indexed': True}}, upsert = True)
             yield (tweet['text'], tweet['tweet_id'], tweet['user_id']) 
 
 
@@ -87,7 +89,7 @@ class Checker:
         # print counts
         tr = self.check_tr(words)
         print tr
-        
+
         de = self.check_de(words)
         print de
         de_list = [w for (w, d, t) in zip(words, de, tr) if d and not t]
@@ -110,8 +112,7 @@ class Checker:
                                    'words': de_list})
         # log the user
         self.target_db['users'].update({'user_id': uid},\
-                                 {'$inc': {'count': 1},\
-                                  '$set': {'searched': False}}, upsert = True)
+                                 {'$inc': {'count': 1}}, upsert = True)
 
         # log the german words
         for word in de_list:
@@ -169,8 +170,8 @@ class Checker:
         lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         output = lookup.communicate(input=input_str)[0]
         morphs = output.strip().split('\n\n')
-        print morphs
-        print len(words)
+        # print morphs
+        # print len(words)
         assert len(morphs) == len(words)
         # true if not ends with '+?', no matter how many analysis for a word
         morph_ans = map(lambda x: not x.endswith('*UNKNOWN*'), morphs)
