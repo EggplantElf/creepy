@@ -211,14 +211,14 @@ class Checker:
 
 
 if __name__ == '__main__':
-    # source_db = sys.argv[1]
-    # target_db = sys.argv[2]
-    # if len(sys.argv) == 4:
-    #     policy = int(sys.argv[3]) # 1 for loose, 2 for strict, 3 for super strict
-    # else:
-    #     policy = 2
-    # checker = Checker(source_db, target_db, 'dict_de.txt', 'dict_tr.txt', policy)
-    # checker.check()
-    checker = Checker('a', 'b', 'dict_de.txt', 'dict_tr.txt', 3)
-    checker.check_single('RT @herzgegenkopf: Hast du kein Respekt vor mir, hab ich kein Respekt vor dir.')
+    source_db = sys.argv[1]
+    target_db = sys.argv[2]
+    if len(sys.argv) == 4:
+        policy = int(sys.argv[3]) # 1 for loose, 2 for strict, 3 for super strict
+    else:
+        policy = 2
+    checker = Checker(source_db, target_db, 'dict_de.txt', 'dict_tr.txt', policy)
+    checker.check()
+    # checker = Checker('a', 'b', 'dict_de.txt', 'dict_tr.txt', 3)
+    # checker.check_single('RT @herzgegenkopf: Hast du kein Respekt vor mir, hab ich kein Respekt vor dir.')
 
