@@ -112,7 +112,8 @@ class Checker:
                                    'words': de_list})
         # log the user
         self.target_db['users'].update({'user_id': uid},\
-                                 {'$inc': {'count': 1}}, upsert = True)
+                                 {'$inc': {'count': 1},\
+                                  '$set': {'searched': False}}, upsert = True)
 
         # log the german words
         for word in de_list:
