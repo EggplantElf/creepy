@@ -205,7 +205,10 @@ class Checker:
                     return (word in self.de_dict)
             return True
         elif self.policy == 3:
-            return word in self.de_dict
+            if pattern1.search(morph_str):
+                return False
+            else:
+                return word in self.de_dict
 
 
 if __name__ == '__main__':
