@@ -56,9 +56,6 @@ class Checker:
 
 
     def check(self):
-        """
-        analyzes every german word as well, if too slow, then change to analyze only non-turkish words
-        """
         batch_num = 1
         size = 10000
         # for each batch
@@ -198,14 +195,14 @@ class Checker:
 
 
     def is_de_word(self, word, morph_str):
-        if self.policy == 1 or self.policy == 2:
+        if self.policy == 1:
             for line in morph_str.split('\n'):
                 if pattern1.search(line):
                     return False
                 elif pattern2.search(line):
                     return (word in self.de_dict)
             return True
-        elif self.policy == 3:
+        elif self.policy >= 2:
             if pattern1.search(morph_str):
                 return False
             else:
