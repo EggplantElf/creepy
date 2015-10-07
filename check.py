@@ -83,11 +83,12 @@ class Checker:
     def check_single(self, text):
         text = text.decode('utf-8')
         words, counts = self.tokenize([(text, 'tid', 'uid')])
-        # print words
+        print words
         # print counts
         tr = self.check_tr(words)
-        de = self.check_de(words)
         print tr
+        
+        de = self.check_de(words)
         print de
         de_list = [w for (w, d, t) in zip(words, de, tr) if d and not t]
         print de_list
@@ -168,8 +169,8 @@ class Checker:
         lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         output = lookup.communicate(input=input_str)[0]
         morphs = output.strip().split('\n\n')
-        # print morphs
-        # print len(words)
+        print morphs
+        print len(words)
         assert len(morphs) == len(words)
         # true if not ends with '+?', no matter how many analysis for a word
         morph_ans = map(lambda x: not x.endswith('*UNKNOWN*'), morphs)
@@ -210,11 +211,14 @@ class Checker:
 
 
 if __name__ == '__main__':
-    source_db = sys.argv[1]
-    target_db = sys.argv[2]
-    if len(sys.argv) == 4:
-        policy = int(sys.argv[3]) # 1 for loose, 2 for strict, 3 for super strict
-    else:
-        policy = 2
-    checker = Checker(source_db, target_db, 'dict_de.txt', 'dict_tr.txt', policy)
-    checker.check()
+    # source_db = sys.argv[1]
+    # target_db = sys.argv[2]
+    # if len(sys.argv) == 4:
+    #     policy = int(sys.argv[3]) # 1 for loose, 2 for strict, 3 for super strict
+    # else:
+    #     policy = 2
+    # checker = Checker(source_db, target_db, 'dict_de.txt', 'dict_tr.txt', policy)
+    # checker.check()
+    checker = Checker('a', 'b', 'dict_de.txt', 'dict_tr.txt', 3)
+    checker.check_single('RT @herzgegenkopf: Hast du kein Respekt vor mir, hab ich kein Respekt vor dir.')
+
