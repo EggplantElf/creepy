@@ -19,7 +19,7 @@ class Searcher:
         self.client = MongoClient()
         self.users = self.client[source_db]['users']
         self.tweets = self.client[target_db]['tweets']
-
+        self.error = 0
 
     def authorize(self, auth_file):
         data = open(auth_file).read()
@@ -32,11 +32,17 @@ class Searcher:
 
 
     def search_all(self):
-        for user in self.users.find({'searched': False}):
-            success = self.search(user['user_id'])
-            self.users.update({'_id': user['_id']}, {'$set': {'searched': True}})                    
-            if not success:
-                self.users.update({'user_id': user['user_id']}, {'$set': {'flag': True}})
+        try:
+            for user in self.users.find({'searched': False}):
+                success = self.search(user['user_id'])
+                self.users.update({'_id': user['_id']}, {'$set': {'searched': True}})                    
+                if not success:
+                    self.users.update({'user_id': user['user_id']}, {'$set': {'flag': True}})
+        except:
+            self.error += 1
+            if self.error < 10:
+                self.search_all()
+
 
     def search(self, uid):
         try:
