@@ -47,10 +47,11 @@ class Searcher:
     def search(self, uid):
         try:
             for tweet in tweepy.Cursor(self.api.user_timeline, user_id=uid, count=200).items(3200):
-                self.tweets.insert({'text': tweet.text,\
-                                    'tweet_id': tweet.id_str,\
-                                    'user_id': tweet.author.id_str,\
-                                    'indexed': False})
+                if tweet.lang == 'tr':
+                    self.tweets.insert({'text': tweet.text,\
+                                        'tweet_id': tweet.id_str,\
+                                        'user_id': tweet.author.id_str,\
+                                        'indexed': False})
             return True
         except:
             return False
