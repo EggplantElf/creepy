@@ -22,6 +22,12 @@ import subprocess
 # filter @username, #topic and url
 filter_pattern = re.compile(r'(@|#|https?:)\S*')
 
+# try to rule out number, punctuation, proper noun, guess, abbreviation, and weird composition
+# use regex to catch all
+pattern1 = re.compile(r'_|<\+PUNCT>|<\+CARD>|<\+SYMBOL>|<\+NPROP>|<GUESSER>|<\^ABBR>')
+pattern2 = re.compile(r'<NN>|<V>|<SUFF>|<VPART>') # check the compound words in dictionary, since morph are too loose
+
+
 def read_dict(dict_file):
     d = set()
     for line in open(dict_file):
@@ -188,11 +194,6 @@ class Checker:
         return morph_ans
 
 
-
-# try to rule out number, punctuation, proper noun, guess, abbreviation, and weird composition
-# use regex to catch all
-pattern1 = re.compile(r'_|<\+PUNCT>|<\+CARD>|<\+SYMBOL>|<\+NPROP>|<GUESSER>|<\^ABBR>')
-pattern2 = re.compile(r'<NN>|<V>|<SUFF>|<VPART>') # check the compound words in dictionary, since morph are too loose
 
     def is_de_word(self, word, morph_str):
         for line in morph_str.split('\n'):
