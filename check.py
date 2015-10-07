@@ -40,12 +40,13 @@ class Checker:
     it analyzes e.g. every 1000 tweets in one go, then reloads the analyzer
     """
 
-    def __init__(self, source_db, target_db, de_dict_file, tr_dict_file):
+    def __init__(self, source_db, target_db, de_dict_file, tr_dict_file, policy):
         self.client = MongoClient()
         self.source_db = self.client[source_db]
         self.target_db = self.client[target_db]
         self.de_dict = read_dict(de_dict_file)
         self.tr_dict = read_dict(tr_dict_file)
+        self.policy = policy
 
 
     # generator for reading tweets from db
@@ -196,16 +197,23 @@ class Checker:
 
 
     def is_de_word(self, word, morph_str):
-        for line in morph_str.split('\n'):
-            if pattern1.search(line):
-                return False
-            elif pattern2.search(line):
-                return (word in self.de_dict)
-        return True
+        if self.policy == 1 or self.policy == 2:
+            for line in morph_str.split('\n'):
+                if pattern1.search(line):
+                    return False
+                elif pattern2.search(line):
+                    return (word in self.de_dict)
+            return True
+        elif self.policy == 3:
+            return word in self.de_dict
 
 
 if __name__ == '__main__':
     source_db = sys.argv[1]
     target_db = sys.argv[2]
-    checker = Checker(source_db, target_db, 'dict_de.txt', 'dict_tr.txt')
+    if len(sys.argv) == 4:
+        policy = int(sys.argv[3]) # 1 for loose, 2 for strict, 3 for super strict
+    else:
+        policy = 2
+    checker = Checker(source_db, target_db, 'dict_de.txt', 'dict_tr.txt', policy)
     checker.check()
