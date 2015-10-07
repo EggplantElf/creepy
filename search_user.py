@@ -3,6 +3,7 @@
 
 import tweepy
 import json
+import sys
 from pymongo import MongoClient
 from pprint import pprint
 
@@ -13,11 +14,11 @@ from pprint import pprint
 
 
 class Searcher:
-    def __init__(self, auth_file):
+    def __init__(self, source_db, target_db, auth_file):
         self.authorize(auth_file)
         self.client = MongoClient()
-        self.users = self.client['switch']['users']
-        self.tweets = self.client['core_user']['tweets']
+        self.users = self.client[source_db]['users']
+        self.tweets = self.client[target_db]['tweets']
 
 
     def authorize(self, auth_file):
@@ -54,6 +55,10 @@ class Searcher:
 
 
 if __name__ == '__main__':
-    searcher = Searcher('pwd/search.pwd')
-    searcher.search_all()
-    # searcher.rate_left()
+    if len(sys.argv) == 3:
+        source_db = sys.argv[1]
+        target_db = sys.argv[2]
+        searcher = Searcher(source_db, target_db, 'pwd/search.pwd')
+        searcher.search_all()
+    else:
+        print 'Wrong argument'
