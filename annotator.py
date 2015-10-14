@@ -9,7 +9,7 @@ import re
 import sys
 import readline
 from pymongo import MongoClient
-
+from termcolor import colored
 
 
 class Annotator:
@@ -29,13 +29,21 @@ class Annotator:
                 flag = input_str
                 self.mark(oid, flag)
             # mark all tweets with the german word(s) in the list
-            # elif len(input_str) == 2 and input_str[1] == 'w':
-            #     flag = input_str[1]
-            #     self.mark_all(tweet['words'], flag)
+            elif len(input_str) == 2 and input_str[1] == 'a':
+                flag = input_str[1]
+                self.mark_all(tweet['words'], flag)
+
+    # show highlighted text
+    # def show(self, text, words):
+
 
     def mark(self, oid, flag):
-        self.tweets.update({'_id', oid}, {'$set': {'flag': flag}})
+        self.tweets.update({'_id': oid}, {'$set': {'flag': flag}})
 
+
+    def mark_all(self, words, flag):
+        self.tweets.update({'$and': [{'words':{'$size': 1}}, {'words':{'$in': words}}]},\
+                            {'$set': {'flag': flag}}, multi = True)
 
 
 
