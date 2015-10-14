@@ -20,5 +20,13 @@ if __name__ == '__main__':
     collection = sys.argv[2]
     key = sys.argv[3]
     value_str = sys.argv[4]
-    value = True if value_str in ['true', 'True'] else False
+    if value_str in ['true', 'True']:
+        value = True
+    elif value_str in ['false', 'False']:
+        value = False
+    else:
+        try:
+            value = int(value_str)
+        except:
+            value = value_str
     add_field(client, db, collection, key, value)
