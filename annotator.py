@@ -21,7 +21,9 @@ class Annotator:
         for tweet in self.tweets.find({'flag': 'x'}).limit(self.size):
             oid = tweet['_id']
             print tweet['text'].encode('utf-8')
-            print str(tweet['words']).encode('utf-8')
+            for word in words:
+                print colored(word, 'red'),
+            print
             flag = 'x'
             input_str = raw_input()
             # simple mark
@@ -29,7 +31,7 @@ class Annotator:
                 flag = input_str
                 self.mark(oid, flag)
             # mark all tweets with the german word(s) in the list
-            elif len(input_str) == 2 and input_str[1] == 'a':
+            elif len(input_str) == 2 and input_str[0] == 'a':
                 flag = input_str[1]
                 self.mark_all(tweet['words'], flag)
 
