@@ -21,7 +21,7 @@ class Annotator:
         for tweet in self.tweets.find({'flag': 'x'}).limit(self.size):
             oid = tweet['_id']
             print tweet['text'].encode('utf-8')
-            for word in words:
+            for word in tweet['words']:
                 print colored(word, 'red'),
             print
             flag = 'x'
