@@ -33,7 +33,7 @@ class Annotator:
             #     flag = input_str[1]
             #     self.mark_all(tweet['words'], flag)
 
-    def mark(oid, flag):
+    def mark(self, oid, flag):
         self.tweets.update({'_id', oid}, {'$set': {'flag': flag}})
 
 
