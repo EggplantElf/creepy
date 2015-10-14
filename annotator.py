@@ -20,8 +20,8 @@ class Annotator:
     def start(self):
         for tweet in self.tweets.find({'flag': 'x'}).limit(self.size):
             oid = tweet['_id']
-            print tweet['text']
-            print tweet['words']
+            print tweet['text'].encode('utf-8')
+            print tweet['words'].encode('utf-8')
             flag = 'x'
             input_str = raw_input()
             # simple mark
