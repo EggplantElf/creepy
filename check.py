@@ -151,7 +151,8 @@ class Checker:
             text = filter_pattern.sub(' ', text)
             for sent in split_multi(text):
                 for token in word_tokenizer(sent):
-                    words.append(token.lower().encode('utf-8', 'ignore'))
+                    # words.append(token.lower().encode('utf-8', 'ignore'))
+                    words.append(token.encode('utf-8', 'ignore'))
                     i += 1
             counts.append(i)
         return words, counts
@@ -202,13 +203,13 @@ class Checker:
                 if pattern1.search(line):
                     return False
                 elif pattern2.search(line):
-                    return (word in self.de_dict)
+                    return (word.decode('utf-8').lower().encode('utf-8') in self.de_dict)
             return True
         elif self.policy >= 2:
             if pattern1.search(morph_str):
                 return False
             else:
-                return word in self.de_dict
+                return word.decode('utf-8').lower().encode('utf-8') in self.de_dict
 
 
 if __name__ == '__main__':
