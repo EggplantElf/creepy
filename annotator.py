@@ -39,7 +39,7 @@ class Annotator:
             flag = 'x'
             input_str = raw_input()
             # simple mark
-            if input_str in ['s', 'g', 't', 'n', 'p', 'x']:
+            if input_str in ['s', 'c', 'g', 't', 'n', 'p', 'x']:
                 flag = input_str
                 self.mark(oid, flag)
             # mark all tweets with the german word(s) in the list
