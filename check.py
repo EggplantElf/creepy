@@ -29,7 +29,7 @@ pattern1 = re.compile(r'_|<\+PUNCT>|<\+CARD>|<\+SYMBOL>|<\+NPROP>|<GUESSER>|<\^A
 pattern2 = re.compile(r'<NN>|<V>|<SUFF>|<VPART>') # check the compound words in dictionary, since morph are too loose
 
 # for turkish morphs
-pattern3 = re.compile(r'\*UNKNOWN\*|\+Punct|\+Num')
+pattern3 = re.compile(r'\*UNKNOWN\*|\+Punct|\+Punc|\+Num')
 # pattern3 = re.compile(r'\*UNKNOWN\*|\+Punct|\+Num')
 
 
@@ -82,7 +82,7 @@ class Checker:
                 i += count
 
                 de_list = [w for (w, d, t) in zip(ws, de, tr) if d and not t]
-                if de_list and tr.count(True) >= tr.count(False):
+                if de_list and tr.count(True) >= tr.count(False) * 2:
                     print zip(ws, tr)
                     self.log(text, tid, uid, de_list)
 
