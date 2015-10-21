@@ -57,6 +57,7 @@ class Checker:
             yield (tweet['text'], tweet['tweet_id'], tweet['user_id']) 
 
 
+
     def check(self):
         batch_num = 1
         size = 10000
@@ -212,15 +213,40 @@ class Checker:
                 return word.decode('utf-8').lower().encode('utf-8') in self.de_dict
 
 
+class TextChecker(Checker):
+    def __init__(self, source_file, target_db, de_dict_file, tr_dict_file, policy):
+        self.client = MongoClient()
+        self.target_db = self.client[target_db]
+        self.de_dict = read_dict(de_dict_file)
+        self.tr_dict = read_dict(tr_dict_file)
+        self.source_file = source_file
+        self.policy = policy
+
+
+    def tweet_stream(self):
+        for line in open(self.source_file):
+            items = line.strip().split('', 3)
+            tid = items[1]
+            uid = items[2]
+            text = items[3]
+            return (tid, uid, text)
+
+
+
 if __name__ == '__main__':
-    source_db = sys.argv[1]
+    # source_db = sys.argv[1]
+    # target_db = sys.argv[2]
+    # if len(sys.argv) == 4:
+    #     policy = int(sys.argv[3]) # 1 for loose, 2 for strict, 3 for super strict
+    # else:
+    #     policy = 2
+    # checker = Checker(source_db, target_db, 'dict_de.txt', 'dict_tr.txt', policy)
+    # checker.check()
+    source_file = sys.argv[1]
     target_db = sys.argv[2]
     if len(sys.argv) == 4:
         policy = int(sys.argv[3]) # 1 for loose, 2 for strict, 3 for super strict
     else:
         policy = 2
-    checker = Checker(source_db, target_db, 'dict_de.txt', 'dict_tr.txt', policy)
+    checker = TextChecker(source_file, target_db, 'dict_de.txt', 'dict_tr.txt', policy)
     checker.check()
-    # checker = Checker('a', 'b', 'dict_de.txt', 'dict_tr.txt', 3)
-    # checker.check_single('RT @herzgegenkopf: Hast du kein Respekt vor mir, hab ich kein Respekt vor dir.')
-
