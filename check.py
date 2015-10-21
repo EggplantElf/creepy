@@ -225,12 +225,14 @@ class TextChecker(Checker):
 
     def tweet_stream(self):
         for line in open(self.source_file):
-            items = line.strip().split(',', 3)
-            tid = items[1]
-            uid = items[2]
-            text = items[3]
-            return (tid, uid, text)
-
+            try:
+                items = line.strip().split(',', 3)
+                tid = items[1]
+                uid = items[2]
+                text = items[3]
+                yield (text.decode('utf-8', 'ignore'), tid, uid)
+            except:
+                pass
 
 
 if __name__ == '__main__':
