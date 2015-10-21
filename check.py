@@ -29,7 +29,8 @@ pattern1 = re.compile(r'_|<\+PUNCT>|<\+CARD>|<\+SYMBOL>|<\+NPROP>|<GUESSER>|<\^A
 pattern2 = re.compile(r'<NN>|<V>|<SUFF>|<VPART>') # check the compound words in dictionary, since morph are too loose
 
 # for turkish morphs
-pattern3 = re.compile(r'\*UNKNOWN\*|\+Punct|\+Num|\+')
+pattern3 = re.compile(r'\*UNKNOWN\*|\+Punct|\+Num')
+# pattern3 = re.compile(r'\*UNKNOWN\*|\+Punct|\+Num')
 
 
 def read_dict(dict_file):
@@ -182,7 +183,9 @@ class Checker:
         assert len(morphs) == len(words)
         # true if not ends with '+?', no matter how many analysis for a word
         # morph_ans = map(lambda x: not x.endswith('*UNKNOWN*'), morphs)
-        morph_ans = map(lambda x: not self.is_tr_word(x), morphs)
+        morph_ans = map(lambda x: self.is_tr_word(x), morphs)
+
+
         dict_ans = [w in self.tr_dict for w in words]
         return [any(pair) for pair in zip(morph_ans, dict_ans)]
 
