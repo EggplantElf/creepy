@@ -24,8 +24,12 @@ filter_pattern = re.compile(r'(@|#|https?:)\S*')
 
 # try to rule out number, punctuation, proper noun, guess, abbreviation, and weird composition
 # use regex to catch all
+# for german morphs
 pattern1 = re.compile(r'_|<\+PUNCT>|<\+CARD>|<\+SYMBOL>|<\+NPROP>|<GUESSER>|<\^ABBR>')
 pattern2 = re.compile(r'<NN>|<V>|<SUFF>|<VPART>') # check the compound words in dictionary, since morph are too loose
+
+# for turkish morphs
+pattern3 = re.compile(r'\*UNKNOWN\*|\+Punct|\+Num|\+')
 
 
 def read_dict(dict_file):
@@ -78,7 +82,8 @@ class Checker:
 
                 de_list = [w for (w, d, t) in zip(ws, de, tr) if d and not t]
                 if de_list and tr.count(True) >= tr.count(False):
-                     self.log(text, tid, uid, de_list)
+                    print zip(ws, tr)
+                    self.log(text, tid, uid, de_list)
 
 
 
@@ -176,8 +181,8 @@ class Checker:
         # print len(words)
         assert len(morphs) == len(words)
         # true if not ends with '+?', no matter how many analysis for a word
-        morph_ans = map(lambda x: not x.endswith('*UNKNOWN*'), morphs)
-        # morph_ans = map(lambda x: not x.endswith('_?'), morphs)
+        # morph_ans = map(lambda x: not x.endswith('*UNKNOWN*'), morphs)
+        morph_ans = map(lambda x: not self.is_tr_word(x), morphs)
         dict_ans = [w in self.tr_dict for w in words]
         return [any(pair) for pair in zip(morph_ans, dict_ans)]
 
@@ -211,6 +216,13 @@ class Checker:
                 return False
             else:
                 return word.decode('utf-8').lower().encode('utf-8') in self.de_dict
+
+    def is_tr_word(self, morph_str):
+        if pattern3.search(morph_str):
+            return False
+        else:
+            return True
+
 
 
 class TextChecker(Checker):
