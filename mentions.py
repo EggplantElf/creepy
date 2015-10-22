@@ -5,24 +5,59 @@
 import tweepy
 from pymongo import MongoClient
 import sys
+import json
 import re
 
-pattern = re.compile(r'@(\S)')
+pattern = re.compile(r'@(\S+)')
 
+def auth_api():
+    data = open('pwd/search.pwd').read()
+    infos = json.loads(data)
+    consumer_key = infos['consumer_key']
+    consumer_secret = infos['consumer_secret']
+    auth = tweepy.AppAuthHandler(consumer_key, consumer_secret)
+    api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
+    return api
 
-
-def process(db):
+def process(api, source_db, target_db):
     client = MongoClient()
-    tweets = client[db]['tweets']
+    tweets = client[source_db]['tweets']
+    users = client[source_db]['users']
+    target_tweets = client[target_db]['tweets']
+    mentioned_uid = set()
+    mentioned_names = set()
+
     for t in tweets.find():
         m = pattern.search(t['text'])
         if m:
-            print t['text']
-            print m.group(1)
+            name = m.group(1)
+            if name not in mentioned_names:
+                mentioned_names.add(name)
+                try:
+                    uid = str(api.get_user(name))
+                    if not (uid in mentioned_uid or users.find({'user_id': uid})):
+                        print uid, name
+                        mentioned_uid.add(uid)
+                        search(uid)
+                except:
+                    pass
 
+
+def search(uid):
+    try:
+        for tweet in tweepy.Cursor(self.api.user_timeline, user_id=uid, count=200).items(3200):
+            if tweet.lang == 'tr':
+                self.tweets.insert({'text': tweet.text,\
+                                    'tweet_id': tweet.id_str,\
+                                    'user_id': tweet.author.id_str,\
+                                    'indexed': False})
+        return True
+    except:
+        return False
 
 
 if __name__ == '__main__':
-    db = sys.argv[1]
-
-    process(db)
+    api = auth_api()
+    source_db = sys.argv[1]
+    target_db = sys.argv[2]
+    process(api, source_db, target_db)
