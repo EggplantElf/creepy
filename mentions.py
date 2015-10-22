@@ -35,21 +35,19 @@ def process(api, source_db, target_db):
            # print name
             if name not in mentioned_names:
                 mentioned_names.add(name)
-                try:
-                    uid = str(api.get_user(name).id)
-                    if not (uid in mentioned_uid or users.find({'user_id': uid})):
-                        print uid, name
-                        mentioned_uid.add(uid)
-                        search(uid)
-                except:
-                    pass
+                uid = str(api.get_user(name).id)
+                if not (uid in mentioned_uid or users.find({'user_id': uid})):
+                    print uid, name
+                    mentioned_uid.add(uid)
+                    search(uid, target_tweets)
 
 
-def search(uid):
+
+def search(uid, target_tweets):
     try:
         for tweet in tweepy.Cursor(self.api.user_timeline, user_id=uid, count=200).items(3200):
             if tweet.lang == 'tr':
-                self.tweets.insert({'text': tweet.text,\
+                target_tweets.insert({'text': tweet.text,\
                                     'tweet_id': tweet.id_str,\
                                     'user_id': tweet.author.id_str,\
                                     'indexed': False})
