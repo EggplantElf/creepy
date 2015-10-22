@@ -15,16 +15,27 @@ def check_exist(input_file, output_file):
 
     f = open(output_file, 'w')
 
+    tweets = {}
+
     for line in open(input_file):
         items = line.split(',', 3)
         tid = items[1]
-        try:
-            t = api.get_status(tid)
-            f.write(line)
-            print 'yeah'
-        except:
-            print 'nope'
+        tweets[int(tid)] = line
+
+    keys = sorted(tweets.keys())
+    i = 0
+    total = 0
+    count = 0
+    while i * 100 < len(tweets):
+        tids = keys[i * 100 : (i+1) * 100]
+        total += len(tids)
+        i += 1
+        results = api.statuses_lookup(tids, trim_user=True)
+        count += len(results)
+        for t in results:
+            f.write(tweets[t.id])
     f.close()
+    print 'checked %d tweets, %d still exist' % (total, count)
 
 if __name__ == '__main__':
     input_file = sys.argv[1]
