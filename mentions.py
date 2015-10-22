@@ -35,11 +35,15 @@ def process(api, source_db, target_db):
            # print name
             if name not in mentioned_names:
                 mentioned_names.add(name)
-                uid = str(api.get_user(name).id)
-                if not (uid in mentioned_uid or users.find({'user_id': uid})):
-                    print uid, name
-                    mentioned_uid.add(uid)
-                    search(uid, target_tweets)
+                ans = api.get_user(name)
+                try:
+                    uid = str(ans.id)
+                    if not (uid in mentioned_uid or users.find({'user_id': uid})):
+                        print uid, name
+                        mentioned_uid.add(uid)
+                        search(uid, target_tweets)
+                except:
+                    pass
 
 
 
