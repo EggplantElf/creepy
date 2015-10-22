@@ -32,24 +32,29 @@ def process(api, source_db, target_db):
         m = pattern.search(t['text'].encode('utf-8'))
         if m:
             name = m.group(1)
-           # print name
+            print name
             if name not in mentioned_names:
                 mentioned_names.add(name)
-                ans = api.get_user(name)
                 try:
+                    ans = api.get_user(name)
                     uid = str(ans.id)
                     if not (uid in mentioned_uid or users.find({'user_id': uid})):
                         print uid, name
                         mentioned_uid.add(uid)
-                        search(uid, target_tweets)
+                        search(api, uid, target_tweets)
                 except:
                     pass
 
 
+def test(api, name):
+    ans = api.get_user(name)
+    print ans
+    print ans.id
+    search(uid, target_tweets)
 
-def search(uid, target_tweets):
+def search(api, uid, target_tweets):
     try:
-        for tweet in tweepy.Cursor(self.api.user_timeline, user_id=uid, count=200).items(3200):
+        for tweet in tweepy.Cursor(api.user_timeline, user_id=uid, count=200).items(3200):
             if tweet.lang == 'tr':
                 target_tweets.insert({'text': tweet.text,\
                                     'tweet_id': tweet.id_str,\
@@ -62,6 +67,7 @@ def search(uid, target_tweets):
 
 if __name__ == '__main__':
     api = auth_api()
-    source_db = sys.argv[1]
-    target_db = sys.argv[2]
-    process(api, source_db, target_db)
+    test(api, 'DemirciEyub')
+    # source_db = sys.argv[1]
+    # target_db = sys.argv[2]
+    # process(api, source_db, target_db)
