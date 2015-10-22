@@ -28,13 +28,15 @@ def process(api, source_db, target_db):
     mentioned_names = set()
 
     for t in tweets.find():
-        m = pattern.search(t['text'])
+        # print t['text'].encode('utf-8')
+        m = pattern.search(t['text'].encode('utf-8'))
         if m:
             name = m.group(1)
+           # print name
             if name not in mentioned_names:
                 mentioned_names.add(name)
                 try:
-                    uid = str(api.get_user(name))
+                    uid = str(api.get_user(name).id)
                     if not (uid in mentioned_uid or users.find({'user_id': uid})):
                         print uid, name
                         mentioned_uid.add(uid)
