@@ -32,7 +32,7 @@ def process(api, source_db, target_db):
         m = pattern.search(t['text'].encode('utf-8'))
         if m:
             name = m.group(1)
-            print name
+            # print name
             if name not in mentioned_names:
                 mentioned_names.add(name)
                 try:
@@ -43,6 +43,7 @@ def process(api, source_db, target_db):
                         mentioned_uid.add(uid)
                         search(api, uid, target_tweets)
                 except:
+                    print 'wrong'
                     pass
 
 
@@ -62,6 +63,7 @@ def search(api, uid, target_tweets):
                                     'indexed': False})
         return True
     except:
+        print 'oh no'
         return False
 
 
