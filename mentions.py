@@ -46,11 +46,11 @@ def process(api, source_db, target_db):
                     pass
 
 
-def test(api, name):
-    ans = api.get_user(name)
-    print ans
-    print ans.id
-    search(uid, target_tweets)
+# def test(api, name):
+#     ans = api.get_user(name)
+#     print ans
+#     print ans.id
+#     search(uid, target_tweets)
 
 def search(api, uid, target_tweets):
     try:
@@ -67,7 +67,7 @@ def search(api, uid, target_tweets):
 
 if __name__ == '__main__':
     api = auth_api()
-    test(api, 'DemirciEyub')
-    # source_db = sys.argv[1]
-    # target_db = sys.argv[2]
-    # process(api, source_db, target_db)
+    # test(api, 'DemirciEyub')
+    source_db = sys.argv[1]
+    target_db = sys.argv[2]
+    process(api, source_db, target_db)
