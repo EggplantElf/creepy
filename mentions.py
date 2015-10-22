@@ -47,11 +47,25 @@ def process(api, source_db, target_db):
                     pass
 
 
-# def test(api, name):
-#     ans = api.get_user(name)
-#     print ans
-#     print ans.id
-#     search(uid, target_tweets)
+def get_mentions(api, source_db, output_file):
+    client = MongoClient()
+    tweets = client[source_db]['tweets']
+    users = client[source_db]['users']
+    target_tweets = client[target_db]['tweets']
+    mentioned_uid = set()
+    mentioned_names = set()
+
+    for t in tweets.find():
+        m = pattern.search(t['text'].encode('utf-8'))
+        if m:
+            name = m.group(1)
+            mentioned_names.add(name)
+
+    f = open(output_file, 'w')
+    for name in mentioned_names:
+        f.write(name + '\n')
+    f.close()
+
 
 def search(api, uid, target_tweets):
     try:
@@ -72,4 +86,5 @@ if __name__ == '__main__':
     # test(api, 'DemirciEyub')
     source_db = sys.argv[1]
     target_db = sys.argv[2]
-    process(api, source_db, target_db)
+    # process(api, source_db, target_db)
+    get_mentions(api, source_db, target_db)
