@@ -57,7 +57,7 @@ def check_exist_in_db(source_db, target_db):
     source = client[source_db]['tweets']
     target = client[target_db]['tweets']
     for tweet in source.find():
-        tid = tweet['tweet_id']
+        tid = int(tweet['tweet_id'])
         tweets_list.append(tid)
         tweets_dict[tid] = tweet
 
@@ -68,12 +68,13 @@ def check_exist_in_db(source_db, target_db):
     while i * 100 < len(tweets_list):
         tids = tweets_list[i * 100 : (i+1) * 100]
         total += len(tids)
+        print tids
         i += 1
         results = api.statuses_lookup(tids, trim_user=True)
         count += len(results)
         for t in results:
-            print tweets_dict[str(t.id)]
-            target.insert(tweets_dict[str(t.id)])
+            print tweets_dict[t.id]
+            target.insert(tweets_dict[t.id])
             
     print 'checked %d tweets, %d still exist' % (total, count)
 
