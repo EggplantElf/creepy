@@ -53,7 +53,7 @@ def get_timeline(api, id_file, source_db, target_db):
     target_tweets = client[target_db]['tweets']
     for line in open(id_file):
         uid = line.strip()
-        if not source_users.find({'user_id': uid}):
+        if not source_users.find_one({'user_id': uid}):
             print uid
             search(api, uid, target_tweets)
 
