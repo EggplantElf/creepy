@@ -251,19 +251,19 @@ class TextChecker(Checker):
 
 
 if __name__ == '__main__':
-    # source_db = sys.argv[1]
-    # target_db = sys.argv[2]
-    # if len(sys.argv) == 4:
-    #     policy = int(sys.argv[3]) # 1 for loose, 2 for strict, 3 for super strict
-    # else:
-    #     policy = 2
-    # checker = Checker(source_db, target_db, 'dict_de.txt', 'dict_tr.txt', policy)
-    # checker.check()
-    source_file = sys.argv[1]
+    source_db = sys.argv[1]
     target_db = sys.argv[2]
     if len(sys.argv) == 4:
         policy = int(sys.argv[3]) # 1 for loose, 2 for strict, 3 for super strict
     else:
         policy = 2
-    checker = TextChecker(source_file, target_db, 'dict_de.txt', 'dict_tr.txt', policy)
+    checker = Checker(source_db, target_db, 'dict_de.txt', 'dict_tr.txt', policy)
     checker.check()
+    # source_file = sys.argv[1]
+    # target_db = sys.argv[2]
+    # if len(sys.argv) == 4:
+    #     policy = int(sys.argv[3]) # 1 for loose, 2 for strict, 3 for super strict
+    # else:
+    #     policy = 2
+    # checker = TextChecker(source_file, target_db, 'dict_de.txt', 'dict_tr.txt', policy)
+    # checker.check()
