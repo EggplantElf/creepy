@@ -47,6 +47,17 @@ def process(api, source_db, target_db):
                     pass
 
 
+def get_timeline(api, id_file, source_db, target_db):
+    client = MongoClient()
+    source_users = client[source_db]['users']
+    target_tweets = client[target_db]['tweets']
+    for line in open(id_file):
+        uid = line.strip()
+        if not source_users.find({'user_id': uid}):
+            print uid
+            search(api, uid, target_tweets)
+
+
 def get_mentions(api, source_db, output_file):
     client = MongoClient()
     tweets = client[source_db]['tweets']
@@ -87,4 +98,5 @@ if __name__ == '__main__':
     source_db = sys.argv[1]
     target_db = sys.argv[2]
     # process(api, source_db, target_db)
-    get_mentions(api, source_db, target_db)
+    # get_mentions(api, source_db, target_db)
+    get_timeline(api, 'ids.txt', source_db, target_db)
