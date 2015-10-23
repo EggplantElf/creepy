@@ -57,10 +57,12 @@ def check_exist_in_db(source_db, target_db):
     source = client[source_db]['tweets']
     target = client[target_db]['tweets']
     for tweet in source.find():
-        tid = int(tweet['tweet_id'])
-        tweets_list.append(tid)
-        tweets_dict[tid] = tweet
-
+        try:
+            tid = int(tweet['tweet_id'])
+            tweets_list.append(tid)
+            tweets_dict[tid] = tweet
+        except:
+            pass
 
     i = 0
     total = 0

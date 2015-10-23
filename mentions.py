@@ -38,7 +38,7 @@ def process(api, source_db, target_db):
                 try:
                     ans = api.get_user(name)
                     uid = str(ans.id)
-                    if not (uid in mentioned_uid or users.find({'user_id': uid})):
+                    if not (uid in mentioned_uid or users.find_one({'user_id': uid})):
                         print uid, name
                         mentioned_uid.add(uid)
                         search(api, uid, target_tweets)
