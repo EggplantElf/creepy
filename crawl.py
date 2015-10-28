@@ -36,6 +36,8 @@ class StdOutListener(tweepy.StreamListener):
                 text = tweet['text'].encode('utf-8', 'ignore')
                 original = 'retweeted_status' not in tweet 
                 coordinates = tweet['coordinates']
+                if coordinates:
+                    coordinates = coordinates['coordinates']
                 entities = tweet['entities']
                 mentions = [m['id_str'] for m in entities['user_mentions']]
                 names = [m['screen_name'].encode('utf-8', 'ignore') for m in entities['user_mentions']]
