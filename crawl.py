@@ -17,10 +17,12 @@ import argparse
 class StdOutListener(tweepy.StreamListener):
     def __init__(self, client, limit, lang):
         super(StdOutListener, self).__init__()
-        self.tweets =  client['twitter_'+lang]['tweets']
-        self.users =  client['twitter_'+lang]['users']
+        self.tweets =  client['new_'+lang]['tweets']
+        self.users =  client['new_'+lang]['users']
         self.count = 0
+        self.errors = 0
         self.limit = limit
+
 
     def on_data(self, data):
         """
@@ -33,16 +35,34 @@ class StdOutListener(tweepy.StreamListener):
                 tweet_id = tweet['id_str']
                 text = tweet['text'].encode('utf-8', 'ignore')
                 original = 'retweeted_status' not in tweet 
-                place = tweet['place']
-                country = place['country_code'] if place else None
+                coordinates = tweet['coordinates']
+                entities = tweet['entities']
+                mentions = [m['id_str'] for m in entities['user_mentions']]
+                names = [m['screen_name'].encode('utf-8', 'ignore') for m in entities['user_mentions']]
+                hashtags = [t['text'].encode('utf-8', 'ignore') for t in entities['hashtags']]
+                urls = [u['url'].encode('utf-8', 'ignore') for u in entities['urls']]
+
+                # some thing to normalize the text
+                # for n in names:
+                #     text = text.replace('@' + n, '')
+                # for h in hashtags:
+                #     text = text.replace('#' + h, '')
+                # for u in urls:
+                #     text = text.replace(u, '')
+
 
                 if original:
                     print text
+                    # pprint(tweet)
+                    # print '***************************'
                     self.tweets.insert({'tweet_id': tweet_id, \
                                         'text': text, \
                                         'user_id': user_id, \
-                                        'country': country,\
-                                        'indexed': False
+                                        'coordinates': coordinates,\
+                                        'mentions': mentions,\
+                                        'hashtags': hashtags,\
+                                        'urls': urls,\
+                                        'status': 0 # can have arbitrary meanings
                                         })
 
                     # if not self.users.find_one({'user_id':user_id}):
@@ -53,7 +73,13 @@ class StdOutListener(tweepy.StreamListener):
                         return False
             except:
                 pprint(tweet)
-                raise KeyError
+                # raise KeyError
+                self.errors += 1
+                if self.errors > 10:
+                    return False
+                else:
+                    sleep(1)
+                    return True
         else:
             print 'limit'
             # sleep(1)
@@ -81,13 +107,14 @@ if __name__ == '__main__':
                         default='en',
                         help='language, default = en')
 
-    parser.add_argument('-c', action='store', default=1000000,
+    parser.add_argument('-c', action='store', default=10000000,
                         dest='count', type=int,
                         help='number of tweets to crawl')
     param = parser.parse_args()
 
 
     consumer_key, consumer_secret, access_token, access_token_secret = read_auth_file('/home/users0/xiangyu/creepy/pwd/%s.pwd' % param.lang)
+    # consumer_key, consumer_secret, access_token, access_token_secret = read_auth_file('pwd/%s.pwd' % param.lang)
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
 

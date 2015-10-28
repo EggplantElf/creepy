@@ -70,7 +70,7 @@ def check_exist_in_db(source_db, target_db):
     while i * 100 < len(tweets_list):
         tids = tweets_list[i * 100 : (i+1) * 100]
         total += len(tids)
-        print tids
+        # print tids
         i += 1
         results = api.statuses_lookup(tids, trim_user=True)
         count += len(results)
