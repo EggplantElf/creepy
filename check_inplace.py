@@ -103,9 +103,9 @@ class Checker:
         print text.encode('utf-8')
         print '[' + ', '.join(de_list) + ']'
         ################
-        # log the tweet
         if status == 2:
-            self.db['tweets'].update({'_id': oid}, {'$set': {'status': 2}})
+            # log the tweet status and german words        
+            self.db['tweets'].update({'_id': oid}, {'$set': {'status': 2, 'words': de_list}}, upsert = True)
             # log the user
             self.db['users'].update({'user_id': uid},\
                                      {'$inc': {'count': 1}}, upsert = True)
@@ -113,6 +113,7 @@ class Checker:
             for word in de_list:
                 self.db['words'].update({'word': word},\
                                          {'$inc': {'count': 1}}, upsert = True)
+
         elif status == 1:
             self.db['tweets'].update({'_id': oid}, {'$set': {'status': 1}})
 
@@ -155,8 +156,6 @@ class Checker:
         lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         output = lookup.communicate(input=input_str)[0]
         morphs = output.strip().split('\n\n')
-        print morphs
-        print len(words)
         assert len(morphs) == len(words)
         # true if not ends with '+?', no matter how many analysis for a word
         # morph_ans = map(lambda x: not x.endswith('*UNKNOWN*'), morphs)
