@@ -1,0 +1,214 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+
+import tweepy
+import time
+import json
+import re
+import sys
+from pymongo import MongoClient
+from segtok.segmenter import split_multi
+from segtok.tokenizer import word_tokenizer, split_contractions
+import pexpect
+import subprocess
+
+# NOTE:
+# Title() for morph analysis, lower() for dictionary lookup
+# ALWAYS: decode().lower().encode()
+# encapsule the lower() and title()
+
+
+# filter @username, #topic and url
+filter_pattern = re.compile(r'(@|#|https?:)\S*')
+
+# try to rule out number, punctuation, proper noun, guess, abbreviation, and weird composition
+# use regex to catch all
+# for german morphs
+pattern1 = re.compile(r'_|<\+PUNCT>|<\+CARD>|<\+SYMBOL>|<\+NPROP>|<GUESSER>|<\^ABBR>')
+pattern2 = re.compile(r'<NN>|<V>|<SUFF>|<VPART>') # check the compound words in dictionary, since morph are too loose
+
+# for turkish morphs
+pattern3 = re.compile(r'\*UNKNOWN\*|\+Punc|\+Num')
+
+
+def read_dict(dict_file):
+    d = set()
+    for line in open(dict_file):
+        d.add(line.strip())
+    return d
+
+class Checker:
+    """
+    for the speed of morphological analyzer, it has to work in batch,
+    it analyzes e.g. every 1000 tweets in one go, then reloads the analyzer
+    """
+
+    def __init__(self, db, de_dict_file, tr_dict_file, policy):
+        self.client = MongoClient()
+        self.db = self.client[db]
+        self.de_dict = read_dict(de_dict_file)
+        self.tr_dict = read_dict(tr_dict_file)
+        self.policy = policy
+
+
+    # generator for reading tweets from db
+    def tweet_stream(self):
+        for tweet in self.db['tweets'].find({'status': 0}):
+            # change the state of the tweet as indexed (checked)
+            # self.db['tweets'].update({'_id': tweet['_id']}, {'$set': {'indexed': True}}, upsert = True)
+            yield (tweet['text'], tweet['tweet_id'], tweet['user_id'], tweet['_id']) 
+
+
+    def batch(self, stream, size):
+        out = []
+        i = 0
+        for (text, tid, uid, oid) in stream:
+            out.append((text, tid, uid, oid))
+            i += 1
+            if i == size:
+                yield out
+                out = []
+                i = 0
+        if out:
+            yield out
+
+
+    def check(self):
+        batch_num = 1
+        size = 10000
+        # for each batch
+        for batch in self.batch(self.tweet_stream(), size):
+            print batch_num * size 
+            batch_num += 1
+            words, counts = self.tokenize(batch)
+            trs = self.check_tr(words)
+            des = self.check_de(words)
+            i = 0
+            # ans = []
+            for ((text, tid, uid, oid), count) in zip(batch, counts):
+                tr = trs[i: i + count] # [True, False, False, True]
+                de = des[i: i + count] # [False, True, False, True]
+                ws = words[i: i + count] # [tr, de, xx, tr]
+                i += count
+
+                de_list = [w for (w, d, t) in zip(ws, de, tr) if d and not t]
+                if de_list and tr.count(True) >= tr.count(False) * 2:
+                    print zip(ws, tr)
+                    self.log(text, tid, uid, oid, de_list, 2) # cs to annotate
+                else:
+                    self.log(text, tid, uid, oid, de_list, 1) # not cs
+
+    def log(self, text, tid, uid, oid, de_list, status):
+        print text.encode('utf-8')
+        print '[' + ', '.join(de_list) + ']'
+        ################
+        # log the tweet
+        if status == 2:
+            self.db['tweets'].update({'_id': oid}, {'$set': {'status': 2}})
+            # log the user
+            self.db['users'].update({'user_id': uid},\
+                                     {'$inc': {'count': 1}}, upsert = True)
+            # log the german words
+            for word in de_list:
+                self.db['words'].update({'word': word},\
+                                         {'$inc': {'count': 1}}, upsert = True)
+        elif status == 1:
+            self.db['tweets'].update({'_id': oid}, {'$set': {'status': 1}})
+
+
+
+    # DONE
+    # input decoded text
+    # output incoded wordlist, lowercase
+    def tokenize(self, tweets):
+        """
+        tokenize the text and filter the @username (and punctuation, smiley ...), leave only words
+        """
+
+        counts = [] # [5, 12, 0, 3, ...] the counts of valid words for each tweet
+        words = [] # list of words
+        # out = '' # one-word-per-line string of the tokenized words for morph analysis
+        
+        for (text, tid, uid, oid) in tweets:
+            i = 0
+            text = filter_pattern.sub(' ', text)
+            for sent in split_multi(text):
+                for token in word_tokenizer(sent):
+                    # words.append(token.lower().encode('utf-8', 'ignore'))
+                    words.append(token.encode('utf-8', 'ignore'))
+                    i += 1
+            counts.append(i)
+        return words, counts
+
+
+
+    # input: list of words in the batch (encoded)
+    # output: list of whether each word is a turkish word (either in morph or dict)
+    def check_tr(self, words):
+        """
+        morphological analysis for turkish words
+        """
+        input_str = '\n'.join(w.decode('utf-8').title().encode('utf-8') for w in words) + '\n'
+        # cmd = './bin/lookup -d -q -f bin/checker.script'
+        cmd = './bin/Morph-Pipeline/lookup -d -q -f bin/Morph-Pipeline/test-script.txt'
+        lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        output = lookup.communicate(input=input_str)[0]
+        morphs = output.strip().split('\n\n')
+        print morphs
+        print len(words)
+        assert len(morphs) == len(words)
+        # true if not ends with '+?', no matter how many analysis for a word
+        # morph_ans = map(lambda x: not x.endswith('*UNKNOWN*'), morphs)
+        morph_ans = map(lambda x: self.is_tr_word(x), morphs)
+
+
+        dict_ans = [w in self.tr_dict for w in words]
+        return [any(pair) for pair in zip(morph_ans, dict_ans)]
+
+
+    def check_de(self, words):
+        """
+        morphological analysis for german words, exclude punctuation and numbers
+        """
+
+        input_str = '\n'.join(w.decode('utf-8').title().encode('utf-8') for w in words) + '\n'
+        cmd = './bin/_run_smor.sh 2> /dev/null'
+        lookup = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        output = lookup.communicate(input=input_str)[0]
+        morphs = output.strip().split('\n\n')
+        assert len(morphs) == len(words)
+        morph_ans = map(lambda (w, m): self.is_de_word(w, m), zip(words, morphs))
+        return morph_ans
+
+
+    def is_de_word(self, word, morph_str):
+        if self.policy == 1:
+            for line in morph_str.split('\n'):
+                if pattern1.search(line):
+                    return False
+                elif pattern2.search(line):
+                    return (word.decode('utf-8').lower().encode('utf-8') in self.de_dict)
+            return True
+        elif self.policy >= 2:
+            if pattern1.search(morph_str):
+                return False
+            else:
+                return word.decode('utf-8').lower().encode('utf-8') in self.de_dict
+
+    def is_tr_word(self, morph_str):
+        if pattern3.search(morph_str):
+            return False
+        else:
+            return True
+
+
+
+if __name__ == '__main__':
+    db = sys.argv[1]
+    if len(sys.argv) == 3:
+        policy = int(sys.argv[2]) # 1 for loose, 2 for strict, 3 for super strict
+    else:
+        policy = 2
+    checker = Checker(db, 'dict_de.txt', 'dict_tr.txt', policy)
+    checker.check()
