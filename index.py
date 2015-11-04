@@ -44,6 +44,20 @@ def index(client, freq_file, lang):
     print 'time used to read tweets:', t1
     save(freq_file, freq_dict)
 
+def read(origin_file, freq_file, lang):
+    freq_dict = defaultdict(int)
+    for line in open(origin_file):
+        items = line.strip().split(',', 3)
+        if len(items) == 4 and items[0] == lang:
+            text = items[3]
+            text = re.sub(filter_pattern, '', text)
+            for sent in split_multi(text):
+                for word in word_tokenizer(sent):
+                    freq_dict[word] += 1
+    save(freq_file, freq_dict)
+
+
+
 
 def load(freq_file):
     d = defaultdict(int)
@@ -65,8 +79,13 @@ def save(freq_file, freq_dict):
 
 
 if __name__ == '__main__':
-    lang = sys.argv[1]
-    freq_file = 'freq_%s.txt' % lang
+    # lang = sys.argv[1]
+    # freq_file = 'freq_%s.txt' % lang
 
-    client = MongoClient()
-    index(client, freq_file, lang)
+    # client = MongoClient()
+    # index(client, freq_file, lang)
+    origin_file = sys.argv[1]
+    freq_file = sys.argv[2]
+    lang = 'de'
+    read(origin_file, freq_file, lang)
+
