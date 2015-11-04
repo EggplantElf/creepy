@@ -14,10 +14,7 @@ import pexpect
 import subprocess
 
 # NOTE:
-# Title() for morph analysis, lower() for dictionary lookup
-# ALWAYS: decode().lower().encode()
-# encapsule the lower() and title()
-
+# find a better german dictionary
 
 # filter @username, #topic and url
 filter_pattern = re.compile(r'(@|#|https?:)\S*')
