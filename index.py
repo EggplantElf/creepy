@@ -20,18 +20,28 @@ filter_pattern = r'(@|#|https?:)\S*'
 
 
 def index(client, freq_file, lang):
-    freq = client['freq'][lang]
     tweets = client['twitter_'+lang]['tweets']
-
     # freq_dict = load(freq_file)
     freq_dict = defaultdict(int)
 
-    # read a batch, 
-    # update 'indexed', 
-    # increase count in freq_dict and total
-    t0 = time()
+    i = 0
+    for tweet in tweets.find():
+        i += 1
+        if i % 100000 == 0:
+            print i
+        # tweets.update({'_id': tweet['_id']}, {'$set': {'indexed': True}})
+        text = tweet['text'].lower()
+        text = re.sub(filter_pattern, '', text)
+        for sent in split_multi(text):
+            for word in word_tokenizer(sent):
+                freq_dict[word] += 1
 
-    for tweet in tweets.find({'indexed': False}):
+    # for the second db (tr)
+    tweets = client['new_'+lang]['tweets']
+    for tweet in tweets.find():
+        i += 1
+        if i % 100000 == 0:
+            print i
         # tweets.update({'_id': tweet['_id']}, {'$set': {'indexed': True}})
         text = tweet['text'].lower()
         text = re.sub(filter_pattern, '', text)
@@ -40,16 +50,18 @@ def index(client, freq_file, lang):
                 freq_dict[word] += 1
 
 
-    t1 = time() - t0
-    print 'time used to read tweets:', t1
     save(freq_file, freq_dict)
 
 def read(origin_file, freq_file, lang):
     freq_dict = defaultdict(int)
+    i = 0
     for line in open(origin_file):
+        i += 1
+        if i % 100000 == 0:
+            print i
         items = line.strip().split(',', 3)
         if len(items) == 4 and items[0] == lang:
-            text = items[3]
+            text = items[3].lower().decode('utf-8')
             text = re.sub(filter_pattern, '', text)
             for sent in split_multi(text):
                 for word in word_tokenizer(sent):
@@ -79,13 +91,12 @@ def save(freq_file, freq_dict):
 
 
 if __name__ == '__main__':
-    # lang = sys.argv[1]
-    # freq_file = 'freq_%s.txt' % lang
-
-    # client = MongoClient()
-    # index(client, freq_file, lang)
-    origin_file = sys.argv[1]
+    lang = sys.argv[1]
     freq_file = sys.argv[2]
-    lang = 'de'
-    read(origin_file, freq_file, lang)
+    client = MongoClient()
+    index(client, freq_file, lang)
+    # origin_file = sys.argv[1]
+    # freq_file = sys.argv[2]
+    # lang = 'de'
+    # read(origin_file, freq_file, lang)
 
