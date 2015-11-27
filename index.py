@@ -30,7 +30,8 @@ def index(client, freq_file, lang):
         if i % 100000 == 0:
             print i
         # tweets.update({'_id': tweet['_id']}, {'$set': {'indexed': True}})
-        text = tweet['text'].lower()
+        # text = tweet['text'].lower()
+        text = tweet['text']
         text = re.sub(filter_pattern, '', text)
         for sent in split_multi(text):
             for word in word_tokenizer(sent):
@@ -43,7 +44,8 @@ def index(client, freq_file, lang):
         if i % 100000 == 0:
             print i
         # tweets.update({'_id': tweet['_id']}, {'$set': {'indexed': True}})
-        text = tweet['text'].lower()
+        # text = tweet['text'].lower()
+        text = tweet['text']
         text = re.sub(filter_pattern, '', text)
         for sent in split_multi(text):
             for word in word_tokenizer(sent):
@@ -61,7 +63,8 @@ def read(origin_file, freq_file, lang):
             print i
         items = line.strip().split(',', 3)
         if len(items) == 4 and items[0] == lang:
-            text = items[3].lower().decode('utf-8')
+            # text = items[3].lower().decode('utf-8')
+            text = items[3].decode('utf-8')
             text = re.sub(filter_pattern, '', text)
             for sent in split_multi(text):
                 for word in word_tokenizer(sent):
